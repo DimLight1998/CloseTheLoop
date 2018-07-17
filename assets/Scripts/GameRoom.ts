@@ -173,6 +173,9 @@ export class GameRoom {
     }
 
     atBorder(row: number, col: number): boolean {
+        if (row < -1 || row > this.nRows || col < -1 || col > this.nCols) {
+            return false;
+        }
         return row === -1 ||
             row === this.nRows ||
             col === -1 ||
