@@ -1,5 +1,5 @@
-import { GameAI } from "./GameAI";
-import { IPlayerInfo } from "./IPlayerInfo";
+import { GameAI } from './GameAI';
+import { IPlayerInfo } from './IPlayerInfo';
 
 export interface IServerPlayerInfo extends IPlayerInfo {
     playerID: number;

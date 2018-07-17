@@ -93,7 +93,9 @@ export default class GameView extends cc.Component {
                 this.colorTiles[newLeftTop.x + i][newLeftTop.y + j] = this.colorRoot.children[cnt];
                 this.trackTiles[newLeftTop.x + i][newLeftTop.y + j] = this.trackRoot.children[cnt];
                 const charCode: number = mapString.charCodeAt(cnt);
+                // tslint:disable-next-line:no-bitwise
                 this.colorMap[newLeftTop.x + i][newLeftTop.y + j] = charCode & ((1 << 4) - 1);
+                // tslint:disable-next-line:no-bitwise
                 this.trackMap[newLeftTop.x + i][newLeftTop.y + j] = (charCode >> 4) & ((1 << 4) - 1);
                 cnt++;
             }
