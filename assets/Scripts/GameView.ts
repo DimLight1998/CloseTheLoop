@@ -112,6 +112,12 @@ export default class GameView extends cc.Component {
         this.fetchNewWorld();
     }
 
+    public changeDirection(direction: number): void {
+        if (this.clientAdapter !== null) {
+            this.clientAdapter.changeDirection(this.myPlayerID, direction);
+        }
+    }
+
     getRowColPosition(row: number, col: number): cc.Vec2 {
         const spriteWidth: number = this.colorRoot.children[0].width;
         const spriteHeight: number = this.colorRoot.children[0].height;
@@ -133,7 +139,6 @@ export default class GameView extends cc.Component {
 
             // camera code
             if (info.playerID === this.myPlayerID) {
-                console.log(this.cameraNode.position, this.headRoot.children[i].position);
                 this.cameraNode.getComponent<CameraController>(CameraController).setFollower(this.headRoot.children[i]);
             }
 
@@ -161,6 +166,7 @@ export default class GameView extends cc.Component {
                 this.nextDuration -= this.timeEpsilon;
             }
         }
+        console.log(this.nextDuration);// fixme
         this.timeLeft = this.nextDuration / 1000;
     }
 

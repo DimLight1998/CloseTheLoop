@@ -213,8 +213,8 @@ export class GameRoom {
             });
             if (info.playerID === playerID2Track) {
                 leftTop = {
-                    x: info.headPos.x - viewNRows / 2 + 1,
-                    y: info.headPos.y - viewNCols / 2 + 1
+                    x: info.headPos.x - Math.floor(viewNRows / 2),
+                    y: info.headPos.y - Math.floor(viewNCols / 2)
                 };
                 GameRoom.rangeAll(leftTop.x, leftTop.x + viewNRows - 1,
                     leftTop.y, leftTop.y + viewNCols - 1, func);

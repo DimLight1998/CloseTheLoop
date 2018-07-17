@@ -17,7 +17,7 @@
         "__id__": 2
       },
       {
-        "__id__": 12
+        "__id__": 13
       }
     ],
     "_tag": -1,
@@ -70,6 +70,9 @@
     "_components": [
       {
         "__id__": 11
+      },
+      {
+        "__id__": 12
       }
     ],
     "_prefab": null,
@@ -326,8 +329,8 @@
     "cameraNode": {
       "__id__": 8
     },
-    "nRows": 20,
-    "nCols": 34,
+    "nRows": 21,
+    "nCols": 35,
     "spritePrefab": {
       "__uuid__": "7b3c8fd1-d3d2-4137-9e18-5eac56cbd066"
     },
@@ -352,7 +355,7 @@
       "__uuid__": "83b29243-0ba2-46a5-a53b-adf27810ee75"
     },
     "nextDuration": 200,
-    "timeEpsilon": 10,
+    "timeEpsilon": 3,
     "trackOpacity": 128
   },
   {
@@ -451,6 +454,19 @@
     "_fitHeight": true
   },
   {
+    "__type__": "11f631wAZtM6q4Y1a/eovny",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 2
+    },
+    "_enabled": true,
+    "judgeDistance": 20,
+    "view": {
+      "__id__": 7
+    }
+  },
+  {
     "__type__": "cc.Node",
     "_name": "LocalGame",
     "_objFlags": 0,
@@ -462,7 +478,7 @@
     "_active": true,
     "_components": [
       {
-        "__id__": 13
+        "__id__": 14
       }
     ],
     "_prefab": null,
@@ -507,7 +523,7 @@
     "_name": "",
     "_objFlags": 0,
     "node": {
-      "__id__": 12
+      "__id__": 13
     },
     "_enabled": true,
     "totalNRows": 80,
