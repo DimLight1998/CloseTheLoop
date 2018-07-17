@@ -1,4 +1,4 @@
-import { GameRoom } from "./GameRoom";
+import { GameRoom } from './GameRoom';
 
 export class GameAI {
     // 供ai操作的游戏对象

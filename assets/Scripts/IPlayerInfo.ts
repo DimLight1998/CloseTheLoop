@@ -17,3 +17,9 @@ export interface IPlayerInfo {
     nBlocks: number;
     state: number;// 0 活着，1正在爆炸，2死了
 }
+
+export interface IPayLoadJson {
+    mapString: string;
+    players: IPlayerInfo;
+    leftTop: IPoint;
+}

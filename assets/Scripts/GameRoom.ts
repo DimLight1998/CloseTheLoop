@@ -1,6 +1,6 @@
 import { IServerPlayerInfo } from "./IServerPlayerInfo";
 import { GameAI } from "./GameAI";
-import { IColor, IPoint } from "./IPlayerInfo";
+import { IColor, IPoint, IPayLoadJson, IPlayerInfo } from "./IPlayerInfo";
 
 export class GameRoom {
     static colorList: IColor[] = [
@@ -54,7 +54,7 @@ export class GameRoom {
         this.colorMap = GameRoom.create2DArray(nRows, nCols);
         this.trackMap = GameRoom.create2DArray(nRows, nCols);
 
-        this.registerAI();
+        this.initAIPlayers();
         this.timer = setInterval(this.updateRound.bind(this), GameRoom.roundDuration);
         // this.updateRound();// invoke the first time
     }
@@ -104,7 +104,7 @@ export class GameRoom {
         return null;
     }
 
-    registerAI(): void {
+    initAIPlayers(): void {
         this.serverPlayerInfos = [];
         for (let i: number = 0; i < this.playerNum; i++) {
             const info: IServerPlayerInfo = {
@@ -143,6 +143,24 @@ export class GameRoom {
         // todo there are a lot to do
         this.updatePlayerPos();
         this.eventEmitter.emit('worldchanged');
+    }
+
+    registerPlayer(): number {
+        const validIndexs: number[] = [];
+        for (let i: number = 0; i < this.serverPlayerInfos.length; i++) {
+            if (this.serverPlayerInfos[i].isAI) {
+                validIndexs.push(i);
+            }
+        }
+        if (validIndexs.length === 0) {
+            return null;
+        }
+        const index: number = validIndexs[GameRoom.randInt(0, validIndexs.length - 1)];
+        const obj: IServerPlayerInfo = this.serverPlayerInfos[index];
+        obj.isAI = false;
+        obj.aiInstance = null;
+        // todo respawn obj
+        return obj.playerID;
     }
 
 }
