@@ -12,7 +12,8 @@ export interface IClientAdapter {
     registerPlayer(): [number, number];// 多人模式下，在这里也能建立websocket连接
 
     registerViewPort(playerID2Track: number, roomID: number,
-        nRows: number, nCols: number, callback: (info: IPayLoadJson) => void): void;
+        nRows: number, nCols: number,
+        callback: (info: IPayLoadJson, deltaTime: number) => void): void;
 }
 
 // 一个房间需要一个server adapter

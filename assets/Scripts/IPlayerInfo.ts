@@ -11,7 +11,7 @@ export interface IColor {
 }
 
 export interface IPlayerInfo {
-    playerColor: IColor;
+    playerID: number;
     headPos: IPoint;
     headDirection: number;
     nBlocks: number;
@@ -20,6 +20,6 @@ export interface IPlayerInfo {
 
 export interface IPayLoadJson {
     mapString: string;
-    players: IPlayerInfo;
+    players: IPlayerInfo[];
     leftTop: IPoint;
 }

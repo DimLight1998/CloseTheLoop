@@ -1,5 +1,5 @@
-import { IPlayerInfo, IPoint, IPayLoadJson } from "./IPlayerInfo";
-import { IClientAdapter } from "./IAdapter";
+import { IPlayerInfo, IPoint, IPayLoadJson } from './IPlayerInfo';
+import { IClientAdapter } from './IAdapter';
 
 const { ccclass, property } = cc._decorator;
 
@@ -34,9 +34,14 @@ export default class GameView extends cc.Component {
     players: IPlayerInfo[];
 
     myPlayerID: number;
+    myRoomID: number;
     private leftTop: IPoint;
 
-    serverAdapter: IClientAdapter;
+    clientAdapter: IClientAdapter;
+
+    public setClientAdapter(adapter: IClientAdapter): void {
+        this.clientAdapter = adapter;
+    }
 
     public setLeftTop(newLeftTop: IPoint, mapString: string): void {
         let cnt: number = 0;
@@ -59,6 +64,19 @@ export default class GameView extends cc.Component {
             }
         }
         this.leftTop = newLeftTop;
+    }
+
+    public startGame(): void {// call it after setting client adapter
+
+        [this.myPlayerID, this.myRoomID] = this.clientAdapter.registerPlayer();
+
+        this.clientAdapter.registerViewPort(this.myPlayerID, this.myRoomID,
+            this.nRows, this.nCols,
+            (info: IPayLoadJson, deltaTime: number) => {
+                this.setLeftTop(info.leftTop, info.mapString);
+                this.players = info.players;
+                this.onWorldChange(deltaTime);
+            });
     }
 
     getRowColPosition(row: number, col: number): cc.Vec2 {
@@ -89,7 +107,7 @@ export default class GameView extends cc.Component {
     }
 
     fetchNewWorld(): void {
-        this.serverAdapter.retrieveNewWorld(Date.now());
+        this.clientAdapter.requestNewWorld(Date.now());
     }
 
     public refreshData(jsonData: IPayLoadJson, deltaTime: number): void {
@@ -127,10 +145,5 @@ export default class GameView extends cc.Component {
             this.colorRoot.addChild(cc.instantiate(this.spritePrefab));
             this.trackRoot.addChild(cc.instantiate(this.spritePrefab));
         }
-
-        // test use
-        // this.setLeftTop({ x: 0, y: 0 });
-        // this.onWorldChange();
-        // this.cameraNode.position = this.colorTiles[this.leftTop.x + this.nRows / 2][this.leftTop.y + this.nCols / 2].position;
     }
 }
