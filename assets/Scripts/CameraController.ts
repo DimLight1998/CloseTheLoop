@@ -2,8 +2,14 @@ const { ccclass } = cc._decorator;
 
 @ccclass
 export default class CameraController extends cc.Component {
-    follower: cc.Node = null;
-    public update(): void {
+    private follower: cc.Node = null;
+
+    public setFollower(follower: cc.Node): void {
+        this.follower = follower;
+        this.node.position = follower.position;
+    }
+
+    update(): void {
         if (this.follower !== null) {
             this.node.position = this.follower.position;
         }

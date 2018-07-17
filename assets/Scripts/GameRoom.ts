@@ -63,7 +63,7 @@ export class GameRoom {
     public startNewGame(): void {
         this.initAIPlayers();
         this.timer = setInterval(this.updateRound.bind(this), GameRoom.roundDuration);
-        // this.updateRound();// invoke the first time
+        this.updateRound();// invoke the first time
     }
 
     changeDirection(playerID: number, direction: number): void { // validate the direction
@@ -115,14 +115,15 @@ export class GameRoom {
         this.serverPlayerInfos = [];
         for (let i: number = 0; i < this.playerNum; i++) {
             const info: IServerPlayerInfo = {
-                playerID: i,
+                playerID: i + 1, // 0 reserverd for space
                 isAI: true,
                 aiInstance: new GameAI(this),
                 headPos: null, // do it later
                 headDirection: 0, // up
                 nBlocks: 0, // do it later
                 state: 0, // 0 活着，1正在爆炸，2死了
-                nextDirection: 0// same as headDirection
+                nextDirection: 0, // same as headDirection
+                tracks: []
             };
             // info.aiInstance.registerEvent(this.eventEmitter); todo
             info.headPos = this.randomSpawnNewPlayer(info.playerID);
@@ -203,7 +204,8 @@ export class GameRoom {
                 headPos: info.headPos,
                 headDirection: info.headDirection,
                 nBlocks: info.nBlocks,
-                state: info.state
+                state: info.state,
+                tracks: info.tracks
             });
             if (info.playerID === playerID2Track) {
                 leftTop = {

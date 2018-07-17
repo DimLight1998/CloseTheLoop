@@ -16,6 +16,7 @@ export interface IPlayerInfo {
     headDirection: number;
     nBlocks: number;
     state: number;// 0 活着，1正在爆炸，2死了
+    tracks: string[];
 }
 
 export interface IPayLoadJson {
