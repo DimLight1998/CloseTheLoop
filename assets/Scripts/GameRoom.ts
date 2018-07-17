@@ -198,6 +198,7 @@ export class GameRoom {
                 color = this.colorMap[r][c];
                 track = this.trackMap[r][c];
             }
+            // tslint:disable-next-line:no-bitwise
             mapString += String.fromCharCode(track << 4 | color);// low bit for color
             return true;
         };
