@@ -5,10 +5,10 @@ import { IServerAdapter } from './IAdapter';
 
 export class GameRoom {
     static directions: IPoint[] = [
-        { x: -1, y: 0 },// up
-        { x: 0, y: 1 },// right
-        { x: 1, y: 0 },// down
-        { x: 0, y: -1 },// left
+        { x: -1, y: 0 }, // up
+        { x: 0, y: 1 }, // right
+        { x: 1, y: 0 }, // down
+        { x: 0, y: -1 }, // left
     ];
 
     static roundDuration: number = 200;// 200ms per round
@@ -22,8 +22,23 @@ export class GameRoom {
     timer: number;
     serverAdapter: IServerAdapter = null;
 
+    constructor(nRows: number, nCols: number, playerNum: number) {
+        this.nRows = nRows;
+        this.nCols = nCols;
+        this.playerNum = playerNum;
+        this.colorMap = GameRoom.create2DArray(nRows, nCols);
+        this.trackMap = GameRoom.create2DArray(nRows, nCols);
+    }
+
     static create2DArray(nRows: number, nCols: number): number[][] {
-        return Array(nRows).fill(0).map(() => Array(nCols).fill(0));
+        const res: number[][] = [];
+        for (let i: number = 0; i < nRows; i++) {
+            res[i] = [];
+            for (let j: number = 0; j < nCols; j++) {
+                res[i][j] = 0;
+            }
+        }
+        return res;
     }
 
     static randInt(l: number, r: number): number {
@@ -45,21 +60,13 @@ export class GameRoom {
         this.serverAdapter = adapter;
     }
 
-    constructor(nRows: number, nCols: number, playerNum: number) {
-        this.nRows = nRows;
-        this.nCols = nCols;
-        this.playerNum = playerNum;
-        this.colorMap = GameRoom.create2DArray(nRows, nCols);
-        this.trackMap = GameRoom.create2DArray(nRows, nCols);
-    }
-
     public startNewGame(): void {
         this.initAIPlayers();
         this.timer = setInterval(this.updateRound.bind(this), GameRoom.roundDuration);
         // this.updateRound();// invoke the first time
     }
 
-    changeDirection(playerID: number, direction: number): void {// validate the direction
+    changeDirection(playerID: number, direction: number): void { // validate the direction
         for (const player of this.serverPlayerInfos) {
             if (player.playerID === playerID) {
                 if ((player.headDirection + 2) % 4 === direction) {
@@ -111,10 +118,10 @@ export class GameRoom {
                 playerID: i,
                 isAI: true,
                 aiInstance: new GameAI(this),
-                headPos: null,// do it later
-                headDirection: 0,// up
-                nBlocks: 0,// do it later
-                state: 0,// 0 活着，1正在爆炸，2死了
+                headPos: null, // do it later
+                headDirection: 0, // up
+                nBlocks: 0, // do it later
+                state: 0, // 0 活着，1正在爆炸，2死了
                 nextDirection: 0// same as headDirection
             };
             // info.aiInstance.registerEvent(this.eventEmitter); todo
@@ -128,7 +135,7 @@ export class GameRoom {
 
     updatePlayerPos(): void {
         for (const player of this.serverPlayerInfos) {
-            if (player.state === 0) {// alive
+            if (player.state === 0) { // alive
                 player.headDirection = player.nextDirection;
                 const vector: IPoint = GameRoom.directions[player.headDirection];
                 player.headPos.x += vector.x;
@@ -175,6 +182,21 @@ export class GameRoom {
         let leftTop: IPoint = null;
         let mapString: string = '';
         const playerInfos: IPlayerInfo[] = [];
+        const func: (r: number, c: number) => boolean = (r: number, c: number): boolean => {
+            let color: number = 0;
+            let track: number = 0;
+            if (this.atBorder(r, c)) { // wall
+                color = 15;
+                track = 0;
+            } else if (this.outOfRange(r, c)) {
+                color = track = 0;
+            } else {
+                color = this.colorMap[r][c];
+                track = this.trackMap[r][c];
+            }
+            mapString += String.fromCharCode(track << 4 | color);// low bit for color
+            return true;
+        };
         for (let info of this.serverPlayerInfos) {
             playerInfos.push({
                 playerID: info.playerID,
@@ -185,25 +207,11 @@ export class GameRoom {
             });
             if (info.playerID === playerID2Track) {
                 leftTop = {
-                    x: info.headPos.x - viewNRows / 2,
-                    y: info.headPos.y - viewNCols / 2
+                    x: info.headPos.x - viewNRows / 2 + 1,
+                    y: info.headPos.y - viewNCols / 2 + 1
                 };
                 GameRoom.rangeAll(leftTop.x, leftTop.x + viewNRows - 1,
-                    leftTop.y, leftTop.y + viewNCols - 1,
-                    (r: number, c: number): boolean => {
-                        let color: number = 0, track: number = 0;
-                        if (this.atBorder(r, c)) {// wall
-                            color = 15;
-                            track = 0;
-                        } else if (this.outOfRange(r, c)) {
-                            color = track = 0;
-                        } else {
-                            color = this.colorMap[r][c];
-                            track = this.trackMap[r][c];
-                        }
-                        mapString += String.fromCharCode(track << 4 | color);// low bit for color
-                        return true;
-                    });
+                    leftTop.y, leftTop.y + viewNCols - 1, func);
             }
         }
 

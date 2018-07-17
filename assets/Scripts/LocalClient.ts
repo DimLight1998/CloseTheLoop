@@ -34,6 +34,7 @@ export class LocalClient implements IClientAdapter {
     }
 
     pushNewWorldResponse(infoString: string): void {
+        console.log('get new world!');// fixme
         if (this.waitingQueue.length === 0) {
             this.infoQueue.push(infoString);
             this.arriveQueue.push(Date.now());

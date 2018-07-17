@@ -1,12 +1,13 @@
 import { IPlayerInfo, IPoint, IPayLoadJson } from './IPlayerInfo';
 import { IClientAdapter } from './IAdapter';
+import CameraController from './CameraController';
 
 const { ccclass, property } = cc._decorator;
 
 @ccclass
 export default class GameView extends cc.Component {
     @property(cc.Node)
-    cameraNode: cc.Node = undefined;
+    cameraNode: cc.Node = null;
 
     @property
     nRows: number = 20;
@@ -35,7 +36,7 @@ export default class GameView extends cc.Component {
 
     myPlayerID: number;
     myRoomID: number;
-    private leftTop: IPoint;
+    leftTop: IPoint;
 
     clientAdapter: IClientAdapter;
 
@@ -66,7 +67,7 @@ export default class GameView extends cc.Component {
         this.leftTop = newLeftTop;
     }
 
-    public startGame(): void {// call it after setting client adapter
+    public startGame(): void { // call it after setting client adapter
 
         [this.myPlayerID, this.myRoomID] = this.clientAdapter.registerPlayer();
 
@@ -77,6 +78,7 @@ export default class GameView extends cc.Component {
                 this.players = info.players;
                 this.onWorldChange(deltaTime);
             });
+        this.fetchNewWorld();
     }
 
     getRowColPosition(row: number, col: number): cc.Vec2 {
@@ -102,6 +104,10 @@ export default class GameView extends cc.Component {
                 this.headRoot.children[i].runAction(
                     cc.moveTo(this.nextDuration / 1000, this.getRowColPosition(info.headPos.x, info.headPos.y)));
             }
+
+            if (info.playerID === this.myPlayerID) {
+                this.cameraNode.getComponent<CameraController>(CameraController).follower = this.headRoot.children[i];
+            }
             // todo player die, animation, explosion
         }
     }
@@ -116,7 +122,7 @@ export default class GameView extends cc.Component {
     }
 
     adjustDuration(deltaTime: number): void {
-        if (deltaTime > this.timeEpsilon) {// 取信息取早了
+        if (deltaTime > this.timeEpsilon) { // 取信息取早了
             this.nextDuration += this.timeEpsilon;
         } else if (deltaTime < -this.timeEpsilon) {
             if (this.nextDuration >= this.timeEpsilon) {

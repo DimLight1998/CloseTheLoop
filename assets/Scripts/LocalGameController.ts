@@ -1,9 +1,5 @@
-import { IClientAdapter, IServerAdapter, IRoomMangerAdapter } from './IAdapter';
 import GameView from './GameView';
-import { GameRoom } from './GameRoom';
-import { IPayLoadJson } from './IPlayerInfo';
 import { LocalClient } from './LocalClient';
-import { LocalServer } from './LocalServer';
 import { LocalRoomManger } from './LocalRoomManger';
 
 const { ccclass, property } = cc._decorator;
@@ -25,7 +21,7 @@ export default class LocalGameController extends cc.Component {
     client: LocalClient = null;
     roomManger: LocalRoomManger = null;
 
-    onEnable(): void {// 就是你，负责开始整个单人游戏！
+    onEnable(): void { // 就是你，负责开始整个单人游戏！
         this.client = new LocalClient(this, this.view);
         this.roomManger = new LocalRoomManger(this);
         this.roomManger.onlyServer.room.startNewGame();

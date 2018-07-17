@@ -1,4 +1,3 @@
-import GameView from './GameView';
 import { IPayLoadJson } from './IPlayerInfo';
 
 // 一个视图需要一个adapter

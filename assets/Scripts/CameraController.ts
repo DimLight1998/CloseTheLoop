@@ -1,8 +1,11 @@
-const { ccclass, property } = cc._decorator;
+const { ccclass } = cc._decorator;
 
 @ccclass
-export default class NewClass extends cc.Component {
+export default class CameraController extends cc.Component {
+    follower: cc.Node = null;
     public update(): void {
-        this.node.position = cc.find('Canvas/Player').position;
+        if (this.follower !== null) {
+            this.node.position = this.follower.position;
+        }
     }
 }
