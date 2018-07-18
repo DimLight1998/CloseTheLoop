@@ -21,7 +21,8 @@ export class GameRoom {
     playerNum: number;// do not exceed 14
     timer: number;
     serverAdapter: IServerAdapter = null;
-    player2Execute: number[] = [];
+    playersToClear: [number, boolean][] = [];
+    potentialFillList: number[] = [];
 
     constructor(nRows: number, nCols: number, playerNum: number) {
         this.nRows = nRows;
@@ -137,13 +138,24 @@ export class GameRoom {
                 info.nBlocks = 9;
                 this.serverPlayerInfos.push(info);
             }// otherwise, discard the ai
-            // todo if the info.headPos is null, should change some fields in the playerInfo
         }
     }
 
-    add2ExecutionList(playerID: number): void {
-        if (this.player2Execute.indexOf(playerID) === -1) {
-            this.player2Execute.push(playerID);
+    addToClearList(playerID: number, includeMap: boolean): void {
+        for (let i: number = 0; i < this.playersToClear.length; i++) {
+            if (this.playersToClear[i][0] === playerID) {
+                this.playersToClear[i][1] = this.playersToClear[i][1] || includeMap;
+                return;
+            }
+        }
+        this.playersToClear.push([playerID, includeMap]);
+    }
+
+    updateDyingPlayers(): void {
+        for (let player of this.serverPlayerInfos) {
+            if (player.state === 1) {
+                player.state = 2;
+            }
         }
     }
 
@@ -153,6 +165,10 @@ export class GameRoom {
     updatePlayerPos(): void {
         for (let player of this.serverPlayerInfos) {
             if (player.state === 0) { // alive
+
+                if(player.headPos.x===0) {
+                    console.log('debug');// fixme
+                }
 
                 if (this.colorMap[player.headPos.x][player.headPos.y] !== player.playerID) {
                     this.trackMap[player.headPos.x][player.headPos.y] = player.playerID;
@@ -173,11 +189,138 @@ export class GameRoom {
                 player.headDirection = player.nextDirection;
                 const vector: IPoint = GameRoom.directions[player.headDirection];
 
-                if (this.atBorder(player.headPos.x + vector.x, player.headPos.y + vector.y)) {
-                    this.add2ExecutionList(player.playerID);
-                } else {
-                    player.headPos.x += vector.x;
-                    player.headPos.y += vector.y;
+                let nextPositionX: number = player.headPos.x + vector.x;
+                let nextPositionY: number = player.headPos.y + vector.y;
+                if (this.colorMap[player.headPos.x][player.headPos.y] !== player.playerID &&
+                    !this.atBorder(nextPositionX, nextPositionY) &&
+                    this.colorMap[nextPositionX][nextPositionY] === player.playerID) {
+                    this.potentialFillList.push(player.playerID);
+                }
+
+                player.headPos.x += vector.x;
+                player.headPos.y += vector.y;
+            }
+        }
+    }
+
+    updateTrackCutting(): void {
+        for (let player of this.serverPlayerInfos) {
+            let currentTrackId: number = this.trackMap[player.headPos.x][player.headPos.y];
+            if (currentTrackId !== 0) {
+                for (let otherPlayer of this.serverPlayerInfos) {
+                    if (otherPlayer.playerID === currentTrackId) {
+                        if (this.trackMap[otherPlayer.headPos.x][otherPlayer.headPos.y] !== otherPlayer.playerID) {
+                            this.addToClearList(otherPlayer.playerID, true);
+                        } else {
+                            this.addToClearList(otherPlayer.playerID, false);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    updatePlayerOverlapping(): void {
+        for (let player of this.serverPlayerInfos) {
+            let curPlayerX: number = player.headPos.x;
+            let curPlayerY: number = player.headPos.y;
+            for (let otherPlayer of this.serverPlayerInfos) {
+                if (otherPlayer !== player &&
+                    otherPlayer.headPos.x === curPlayerX &&
+                    otherPlayer.headPos.y === curPlayerY &&
+                    this.colorMap[otherPlayer.headPos.x][otherPlayer.headPos.y] !== otherPlayer.playerID) {
+                    this.addToClearList(otherPlayer.playerID, true);
+                }
+            }
+
+            if (this.atBorder(curPlayerX, curPlayerY)) {
+                this.addToClearList(player.playerID, true);
+            }
+        }
+    }
+
+    updateColorFilling(): void {
+        /**
+         * This function will consider color and track with id `walledId` as wall.
+         */
+        function fillingAux(
+            queue: [number, number][],
+            x: number,
+            y: number,
+            walledId: number,
+            room: GameRoom
+        ): boolean {
+            if (room.atBorder(x, y)) {
+                return true;
+            }
+            if (room.colorMap[x][y] !== walledId && room.trackMap[x][y] !== walledId) {
+                queue.push([x, y]);
+            }
+            return false;
+        }
+
+        // since there are modification to the clearList, we should update potential list
+        let excludeList: number[] = [];
+        for (let p of this.playersToClear) {
+            excludeList.push(p[0]);
+        }
+
+        for (let i: number = this.potentialFillList.length - 1; i >= 0; i--) {
+            if (excludeList.indexOf(i) !== -1) {
+                this.potentialFillList.splice(i, 1);
+            }
+        }
+
+        // for elements still in the potential list, fill for them
+        for (let playerId of this.potentialFillList) {
+            let mapStatus: number[][] = GameRoom.create2DArray(this.nRows, this.nCols);
+
+            // flood fill
+            for (let r: number = 0; r < this.nRows; r++) {
+                for (let c: number = 0; c < this.nCols; c++) {
+                    if (mapStatus[r][c] === 0 && this.colorMap[r][c] !== playerId && this.trackMap[r][c] !== playerId) {
+                        // start flood fill
+                        let adjToWall: boolean = false;
+                        let queue: [number, number][] = [];
+                        queue.push([r, c]);
+
+                        while (queue.length > 0) {
+                            let [x, y]: [number, number] = queue.shift();
+
+                            adjToWall = adjToWall || fillingAux(queue, x + 1, y, playerId, this);
+                            adjToWall = adjToWall || fillingAux(queue, x - 1, y, playerId, this);
+                            adjToWall = adjToWall || fillingAux(queue, x, y + 1, playerId, this);
+                            adjToWall = adjToWall || fillingAux(queue, x, y - 1, playerId, this);
+
+                            mapStatus[x][y] = 1;
+                        }
+
+                        if (!adjToWall) {
+                            // this block is not adjacent to a wall, so it should be colored
+                            let reQueue: [number, number][] = [];
+                            reQueue.push([r, c]);
+                            while (reQueue.length > 0) {
+                                let [x, y]: [number, number] = reQueue.shift();
+
+                                fillingAux(reQueue, x + 1, y, playerId, this);
+                                fillingAux(reQueue, x - 1, y, playerId, this);
+                                fillingAux(reQueue, x, y + 1, playerId, this);
+                                fillingAux(reQueue, x, y - 1, playerId, this);
+
+                                this.colorMap[x][y] = playerId;
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (let r: number = 0; r < this.nRows; r++) {
+                for (let c: number = 0; c < this.nCols; c++) {
+                    if (this.trackMap[r][c] === playerId) {
+                        this.colorMap[r][c] = playerId;
+                        this.trackMap[r][c] = 0;
+                    }
                 }
             }
         }
@@ -187,10 +330,14 @@ export class GameRoom {
      * update all players' position logically. if it has a server adapter, dispatch the world to other clients.
      */
     updateRound(): void {
-        // todo there are a lot to do
-        this.player2Execute = [];
+        this.playersToClear = [];
+        this.potentialFillList = [];
+        this.updateDyingPlayers();
         this.updatePlayerPos();
-        this.executePlayers();
+        this.updateTrackCutting();
+        this.updatePlayerOverlapping();
+        this.updateColorFilling();
+        this.clearPlayers();
         if (this.serverAdapter !== null) {
             this.serverAdapter.dispatchNewWorld();
         }
@@ -201,16 +348,16 @@ export class GameRoom {
      * return original ID of the player. If no such AI player found, return null.
      */
     registerPlayer(): number {
-        const validIndexs: number[] = [];
+        const validIndexes: number[] = [];
         for (let i: number = 0; i < this.serverPlayerInfos.length; i++) {
             if (this.serverPlayerInfos[i].isAI) {
-                validIndexs.push(i);
+                validIndexes.push(i);
             }
         }
-        if (validIndexs.length === 0) {
+        if (validIndexes.length === 0) {
             return null;
         }
-        const index: number = validIndexs[GameRoom.randInt(0, validIndexs.length - 1)];
+        const index: number = validIndexes[GameRoom.randInt(0, validIndexes.length - 1)];
         const obj: IServerPlayerInfo = this.serverPlayerInfos[index];
         obj.isAI = false;
         obj.aiInstance = null;
@@ -294,21 +441,30 @@ export class GameRoom {
         };
     }
 
-    executePlayers(): void {
+    /**
+     * Clear player's track map and/or color map.
+     */
+    clearPlayers(): void {
         for (let i: number = 0; i < this.nRows; i++) {
             for (let j: number = 0; j < this.nCols; j++) {
-                if (this.player2Execute.indexOf(this.colorMap[i][j]) !== -1) {
-                    this.colorMap[i][j] = 0;
-                }
-                if (this.player2Execute.indexOf(this.trackMap[i][j]) !== -1) {
-                    this.trackMap[i][j] = 0;
+                for (let p of this.playersToClear) {
+                    if (p[0] === this.trackMap[i][j]) {
+                        this.trackMap[i][j] = 0;
+                    }
+
+                    if (p[1] && p[0] === this.colorMap[i][j]) {
+                        this.colorMap[i][j] = 0;
+                    }
                 }
             }
         }
         for (let player of this.serverPlayerInfos) {
-            if (this.player2Execute.indexOf(player.playerID) !== -1) {
-                player.tracks = [];
-                player.state = 2;
+            for (let p of this.playersToClear) {
+                if (p[0] === player.playerID && p[1]) {
+                    player.tracks = [];
+                    player.state = 1;
+                    break;
+                }
             }
         }
     }

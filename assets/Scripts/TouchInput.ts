@@ -47,6 +47,17 @@ export default class TouchInput extends cc.Component {
     onEnable(): void {
         this.node.on(cc.Node.EventType.TOUCH_START, this.handleTouchStart.bind(this));
         this.node.on(cc.Node.EventType.TOUCH_MOVE, this.handleTouchMove.bind(this));
+
+        cc.systemEvent.on(cc.SystemEvent.EventType.KEY_DOWN, event => {
+            if (this.view !== null) {
+                switch (event.keyCode) {
+                    case cc.KEY.w: this.view.changeDirection(0); break;
+                    case cc.KEY.a: this.view.changeDirection(3); break;
+                    case cc.KEY.s: this.view.changeDirection(2); break;
+                    case cc.KEY.d: this.view.changeDirection(1); break;
+                }
+            }
+        });
     }
     onDisable(): void {
         this.node.off(cc.Node.EventType.TOUCH_START, this.handleTouchStart.bind(this));
