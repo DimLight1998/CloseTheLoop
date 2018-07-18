@@ -2,32 +2,29 @@ import { IPlayerInfo, IPoint, IPayLoadJson } from './IPlayerInfo';
 import { IClientAdapter } from './IAdapter';
 import CameraController from './CameraController';
 import { GameRoom } from './GameRoom';
-
-// use a when deploy, use b when develop
-import tinycolor = require('./Lib/tinycolor.js');    // a
-// import 'tinycolor2';                                 // b
+import tinycolor = require('./Lib/tinycolor.js'); // ignore the importing error
 
 const { ccclass, property } = cc._decorator;
 
 @ccclass
 export default class GameView extends cc.Component {
     static colorList: tinycolorInstance[] = [
-        tinycolor('rgb(255, 255, 255)'),
-        tinycolor('rgb(229, 115, 115)'),
-        tinycolor('rgb(186, 104, 200)'),
-        tinycolor('rgb(121, 134, 203)'),
-        tinycolor('rgb(79, 195, 247)'),
-        tinycolor('rgb(77, 182, 172)'),
-        tinycolor('rgb(174, 213, 129)'),
-        tinycolor('rgb(255, 241, 118)'),
-        tinycolor('rgb(255, 183, 77)'),
-        tinycolor('rgb(161, 136, 127)'),
-        tinycolor('rgb(144, 164, 174)'),
-        tinycolor('rgb(130, 119, 23)'),
-        tinycolor('rgb(255, 111, 0)'),
-        tinycolor('rgb(62, 39, 35)'),
-        tinycolor('rgb(27, 94, 32)'),
-        tinycolor('rgb(255, 255, 255)')
+        tinycolor('#ffffff'),
+        tinycolor('#ba68c8'),
+        tinycolor('#7986cb'),
+        tinycolor('#64b5f6'),
+        tinycolor('#e57373'),
+        tinycolor('#4dd0e1'),
+        tinycolor('#4db6ac'),
+        tinycolor('#81c784'),
+        tinycolor('#aed581'),
+        tinycolor('#dce775'),
+        tinycolor('#90a4ae'),
+        tinycolor('#ffd54f'),
+        tinycolor('#ffb74d'),
+        tinycolor('#ff8a65'),
+        tinycolor('#a1887f'),
+        tinycolor('#ffffff')
     ];
 
     static toRGBTuple(color: tinycolorInstance): [number, number, number] {
@@ -184,7 +181,8 @@ export default class GameView extends cc.Component {
                 this.cameraNode.getComponent<CameraController>(CameraController).setFollower(this.headRoot.children[i]);
             }
 
-            this.headRoot.children[i].color = cc.color(...GameView.toRGBTuple(GameView.colorList[info.playerID]));
+            this.headRoot.children[i].color =
+                cc.color(...GameView.toRGBTuple(GameView.colorList[info.playerID].clone().darken(20)));
 
             if (info.playerID === this.myPlayerID) {// fixme
                 console.log(info.tracks.length);
