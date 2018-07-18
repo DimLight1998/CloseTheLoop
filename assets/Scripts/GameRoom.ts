@@ -20,9 +20,13 @@ export class GameRoom {
     serverPlayerInfos: IServerPlayerInfo[];
     playerNum: number;// do not exceed 14
     timer: number;
+    lastUpdateTime: number;
     serverAdapter: IServerAdapter = null;
     playersToClear: [number, boolean][] = [];
     potentialFillList: number[] = [];
+
+    mapStatus: number[][] = null;
+    maxT: number;
 
     constructor(nRows: number, nCols: number, playerNum: number) {
         this.nRows = nRows;
@@ -30,6 +34,8 @@ export class GameRoom {
         this.playerNum = playerNum;
         this.colorMap = GameRoom.create2DArray(nRows, nCols);
         this.trackMap = GameRoom.create2DArray(nRows, nCols);
+        this.mapStatus = GameRoom.create2DArray(nRows, nCols);
+        this.maxT = 0;
     }
 
     static create2DArray(nRows: number, nCols: number): number[][] {
@@ -67,23 +73,18 @@ export class GameRoom {
      */
     public startNewGame(): void {
         this.initAIPlayers();
-        this.timer = setInterval(this.updateRound.bind(this), GameRoom.roundDuration);
-        this.updateRound();// invoke the first time
+        this.timer = setTimeout(this.updateRound.bind(this), 0);// invoke the first time
     }
 
     /**
      * change the player's direction, prevent turning back.
      */
     changeDirection(playerID: number, direction: number): void { // validate the direction
-        for (const player of this.serverPlayerInfos) {
-            if (player.playerID === playerID) {
-                if ((player.headDirection + 2) % 4 === direction) {
-                    // invalid direction
-                } else {
-                    player.nextDirection = direction;
-                }
-                break;
-            }
+        const player: IServerPlayerInfo = this.serverPlayerInfos[playerID - 1];
+        if ((player.headDirection + 2) % 4 === direction) {
+            // invalid direction
+        } else {
+            player.nextDirection = direction;
         }
     }
 
@@ -136,8 +137,11 @@ export class GameRoom {
             info.headPos = this.randomSpawnNewPlayer(info.playerID);
             if (info.headPos !== null) {
                 info.nBlocks = 9;
-                this.serverPlayerInfos.push(info);
-            }// otherwise, discard the ai
+            } else {
+                info.nBlocks = 0;
+                info.state = 2;
+            }
+            this.serverPlayerInfos.push(info);
         }
     }
 
@@ -165,10 +169,6 @@ export class GameRoom {
     updatePlayerPos(): void {
         for (let player of this.serverPlayerInfos) {
             if (player.state === 0) { // alive
-
-                if(player.headPos.x===0) {
-                    console.log('debug');// fixme
-                }
 
                 if (this.colorMap[player.headPos.x][player.headPos.y] !== player.playerID) {
                     this.trackMap[player.headPos.x][player.headPos.y] = player.playerID;
@@ -205,16 +205,20 @@ export class GameRoom {
 
     updateTrackCutting(): void {
         for (let player of this.serverPlayerInfos) {
-            let currentTrackId: number = this.trackMap[player.headPos.x][player.headPos.y];
-            if (currentTrackId !== 0) {
-                for (let otherPlayer of this.serverPlayerInfos) {
-                    if (otherPlayer.playerID === currentTrackId) {
-                        if (this.trackMap[otherPlayer.headPos.x][otherPlayer.headPos.y] !== otherPlayer.playerID) {
-                            this.addToClearList(otherPlayer.playerID, true);
-                        } else {
-                            this.addToClearList(otherPlayer.playerID, false);
+            if (!this.atBorder(player.headPos.x, player.headPos.y)) {
+                let currentTrackId: number = this.trackMap[player.headPos.x][player.headPos.y];
+                if (currentTrackId !== 0) {
+                    for (let otherPlayer of this.serverPlayerInfos) {
+                        if (otherPlayer.playerID === currentTrackId) {
+                            if (!this.atBorder(otherPlayer.headPos.x, otherPlayer.headPos.y)) {// will be killed by wall
+                                if (this.colorMap[otherPlayer.headPos.x][otherPlayer.headPos.y] !== otherPlayer.playerID) {
+                                    this.addToClearList(otherPlayer.playerID, true);
+                                } else {
+                                    this.addToClearList(otherPlayer.playerID, false);
+                                }
+                            }
+                            break;
                         }
-                        break;
                     }
                 }
             }
@@ -223,19 +227,22 @@ export class GameRoom {
 
     updatePlayerOverlapping(): void {
         for (let player of this.serverPlayerInfos) {
-            let curPlayerX: number = player.headPos.x;
-            let curPlayerY: number = player.headPos.y;
-            for (let otherPlayer of this.serverPlayerInfos) {
-                if (otherPlayer !== player &&
-                    otherPlayer.headPos.x === curPlayerX &&
-                    otherPlayer.headPos.y === curPlayerY &&
-                    this.colorMap[otherPlayer.headPos.x][otherPlayer.headPos.y] !== otherPlayer.playerID) {
-                    this.addToClearList(otherPlayer.playerID, true);
-                }
-            }
+            if (player.state === 0) {
+                let [curPlayerX, curPlayerY]: [number, number] = [player.headPos.x, player.headPos.y];
 
-            if (this.atBorder(curPlayerX, curPlayerY)) {
-                this.addToClearList(player.playerID, true);
+                if (this.atBorder(curPlayerX, curPlayerY)) {
+                    this.addToClearList(player.playerID, true);
+                } else {
+                    for (let otherPlayer of this.serverPlayerInfos) {
+                        if (otherPlayer !== player &&
+                            otherPlayer.state === 0 &&
+                            otherPlayer.headPos.x === curPlayerX &&
+                            otherPlayer.headPos.y === curPlayerY &&
+                            this.colorMap[otherPlayer.headPos.x][otherPlayer.headPos.y] !== otherPlayer.playerID) {
+                            this.addToClearList(otherPlayer.playerID, true);
+                        }
+                    }
+                }
             }
         }
     }
@@ -249,12 +256,16 @@ export class GameRoom {
             x: number,
             y: number,
             walledId: number,
-            room: GameRoom
+            room: GameRoom,
+            fillStatus: number[][],
+            targetValue: number
         ): boolean {
             if (room.atBorder(x, y)) {
                 return true;
             }
-            if (room.colorMap[x][y] !== walledId && room.trackMap[x][y] !== walledId) {
+            if (room.colorMap[x][y] !== walledId && room.trackMap[x][y] !== walledId
+                && fillStatus[x][y] !== targetValue) {
+                fillStatus[x][y] = targetValue;
                 queue.push([x, y]);
             }
             return false;
@@ -267,48 +278,46 @@ export class GameRoom {
         }
 
         for (let i: number = this.potentialFillList.length - 1; i >= 0; i--) {
-            if (excludeList.indexOf(i) !== -1) {
+            if (excludeList.indexOf(this.potentialFillList[i]) !== -1) {
                 this.potentialFillList.splice(i, 1);
             }
         }
 
         // for elements still in the potential list, fill for them
         for (let playerId of this.potentialFillList) {
-            let mapStatus: number[][] = GameRoom.create2DArray(this.nRows, this.nCols);
+            this.maxT++;
 
             // flood fill
             for (let r: number = 0; r < this.nRows; r++) {
                 for (let c: number = 0; c < this.nCols; c++) {
-                    if (mapStatus[r][c] === 0 && this.colorMap[r][c] !== playerId && this.trackMap[r][c] !== playerId) {
+                    if (this.mapStatus[r][c] !== this.maxT && this.colorMap[r][c] !== playerId && this.trackMap[r][c] !== playerId) {
                         // start flood fill
                         let adjToWall: boolean = false;
                         let queue: [number, number][] = [];
                         queue.push([r, c]);
+                        this.mapStatus[r][c] = this.maxT;
 
                         while (queue.length > 0) {
                             let [x, y]: [number, number] = queue.shift();
 
-                            adjToWall = adjToWall || fillingAux(queue, x + 1, y, playerId, this);
-                            adjToWall = adjToWall || fillingAux(queue, x - 1, y, playerId, this);
-                            adjToWall = adjToWall || fillingAux(queue, x, y + 1, playerId, this);
-                            adjToWall = adjToWall || fillingAux(queue, x, y - 1, playerId, this);
-
-                            mapStatus[x][y] = 1;
+                            adjToWall = adjToWall || fillingAux(queue, x + 1, y, playerId, this, this.mapStatus, this.maxT);
+                            adjToWall = adjToWall || fillingAux(queue, x - 1, y, playerId, this, this.mapStatus, this.maxT);
+                            adjToWall = adjToWall || fillingAux(queue, x, y + 1, playerId, this, this.mapStatus, this.maxT);
+                            adjToWall = adjToWall || fillingAux(queue, x, y - 1, playerId, this, this.mapStatus, this.maxT);
                         }
 
                         if (!adjToWall) {
                             // this block is not adjacent to a wall, so it should be colored
-                            let reQueue: [number, number][] = [];
-                            reQueue.push([r, c]);
-                            while (reQueue.length > 0) {
-                                let [x, y]: [number, number] = reQueue.shift();
+                            queue.push([r, c]);
+                            this.colorMap[r][c] = playerId;
 
-                                fillingAux(reQueue, x + 1, y, playerId, this);
-                                fillingAux(reQueue, x - 1, y, playerId, this);
-                                fillingAux(reQueue, x, y + 1, playerId, this);
-                                fillingAux(reQueue, x, y - 1, playerId, this);
+                            while (queue.length > 0) {
+                                let [x, y]: [number, number] = queue.shift();
 
-                                this.colorMap[x][y] = playerId;
+                                fillingAux(queue, x + 1, y, playerId, this, this.colorMap, playerId);
+                                fillingAux(queue, x - 1, y, playerId, this, this.colorMap, playerId);
+                                fillingAux(queue, x, y + 1, playerId, this, this.colorMap, playerId);
+                                fillingAux(queue, x, y - 1, playerId, this, this.colorMap, playerId);
                             }
                         }
                     }
@@ -323,6 +332,12 @@ export class GameRoom {
                     }
                 }
             }
+
+            for (let info of this.serverPlayerInfos) {// clear tracks
+                if (info.playerID === playerId) {
+                    info.tracks = [];
+                }
+            }
         }
     }
 
@@ -330,6 +345,7 @@ export class GameRoom {
      * update all players' position logically. if it has a server adapter, dispatch the world to other clients.
      */
     updateRound(): void {
+        this.lastUpdateTime = Date.now();
         this.playersToClear = [];
         this.potentialFillList = [];
         this.updateDyingPlayers();
@@ -341,6 +357,15 @@ export class GameRoom {
         if (this.serverAdapter !== null) {
             this.serverAdapter.dispatchNewWorld();
         }
+        let currentTime: number = Date.now();
+        let duration: number = this.lastUpdateTime + GameRoom.roundDuration - currentTime;
+        if (duration < 0) {
+            console.log('Warning! next update should happen ' + -duration + 'ms ago!');
+            duration = 0;
+        } else {
+            console.log('actually compute costs ' + (currentTime - this.lastUpdateTime) + 'ms');// fixme
+        }
+        this.timer = setTimeout(this.updateRound.bind(this), duration);
     }
 
     /**
@@ -460,9 +485,11 @@ export class GameRoom {
         }
         for (let player of this.serverPlayerInfos) {
             for (let p of this.playersToClear) {
-                if (p[0] === player.playerID && p[1]) {
-                    player.tracks = [];
-                    player.state = 1;
+                if (p[0] === player.playerID) {
+                    if (p[1]) {// @refactor
+                        player.tracks = [];
+                        player.state = 1;
+                    }
                     break;
                 }
             }
