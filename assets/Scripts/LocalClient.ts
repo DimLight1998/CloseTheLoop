@@ -3,8 +3,14 @@ import LocalGameController from './LocalGameController';
 import GameView from './GameView';
 import { IPayLoadJson } from './IPlayerInfo';
 
+/**
+ * This class is an implementation of the ClientAdapter for local game.
+ */
 export class LocalClient implements IClientAdapter {
 
+    /**
+     * Save incoming information about the world.
+     */
     infoQueue: string[] = [];
     waitingQueue: number[] = [];
     arriveQueue: number[] = [];

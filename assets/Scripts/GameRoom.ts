@@ -60,12 +60,18 @@ export class GameRoom {
         this.serverAdapter = adapter;
     }
 
+    /**
+     * initialize all AI players (will be replaced soon), update round regularly.
+     */
     public startNewGame(): void {
         this.initAIPlayers();
         this.timer = setInterval(this.updateRound.bind(this), GameRoom.roundDuration);
         this.updateRound();// invoke the first time
     }
 
+    /**
+     * change the player's direction, prevent turning back.
+     */
     changeDirection(playerID: number, direction: number): void { // validate the direction
         for (const player of this.serverPlayerInfos) {
             if (player.playerID === playerID) {
@@ -79,14 +85,10 @@ export class GameRoom {
         }
     }
 
-    outOfRange(r: number, c: number): boolean {
-        return r < 0 ||
-            r >= this.nRows ||
-            c < 0 ||
-            c >= this.nCols;
-    }
-
-    // 返回玩家被重生到的位置
+    /**
+     * try to generate a 3x3 block for a player to spawn on, return the center of the block.
+     * sometimes finding such area is hard (maybe impossible), return null in this case.
+     */
     randomSpawnNewPlayer(playerID: number): IPoint {
         const maxTryNum: number = 100;
         for (let i: number = 0; i < maxTryNum; i++) {
@@ -111,6 +113,9 @@ export class GameRoom {
         return null;
     }
 
+    /**
+     * fill the room with AI players, they will be replaced when new player enters in.
+     */
     initAIPlayers(): void {
         this.serverPlayerInfos = [];
         for (let i: number = 0; i < this.playerNum; i++) {
@@ -131,9 +136,13 @@ export class GameRoom {
                 info.nBlocks = 9;
                 this.serverPlayerInfos.push(info);
             }// otherwise, discard the ai
+            // todo if the info.headPos is null, should change some fields in the playerInfo
         }
     }
 
+    /**
+     * update all players' location, logically.
+     */
     updatePlayerPos(): void {
         for (const player of this.serverPlayerInfos) {
             if (player.state === 0) { // alive
@@ -146,6 +155,9 @@ export class GameRoom {
         }
     }
 
+    /**
+     * update all players' position logically. if it has a server adapter, dispatch the world to other clients.
+     */
     updateRound(): void {
         // todo there are a lot to do
         this.updatePlayerPos();
@@ -154,6 +166,10 @@ export class GameRoom {
         }
     }
 
+    /**
+     * add a real player into serverPlayerInfos by replacing a random AI player,
+     * return original ID of the player. If no such AI player found, return null.
+     */
     registerPlayer(): number {
         const validIndexs: number[] = [];
         for (let i: number = 0; i < this.serverPlayerInfos.length; i++) {
@@ -172,6 +188,11 @@ export class GameRoom {
         return obj.playerID;
     }
 
+    /**
+     * check if the given point is at border of the map.On the map,
+     * 0 to(row - 1) and 0 to(col - 1)(both included) are walkable areas,
+     * -1, row and col represent borders.Only return true if the point is exactly on the border.
+     */
     atBorder(row: number, col: number): boolean {
         if (row < -1 || row > this.nRows || col < -1 || col > this.nCols) {
             return false;
@@ -182,6 +203,21 @@ export class GameRoom {
             col === this.nCols;
     }
 
+    /**
+     * check if the given point is out of the walkable area. note the border is also considered out of range.
+     */
+    outOfRange(r: number, c: number): boolean {
+        return r < 0 ||
+            r >= this.nRows ||
+            c < 0 ||
+            c >= this.nCols;
+    }
+
+    /**
+     * dump the current status into a json, used for dispatching world.
+     * @param playerID2Track the player to which the current status is specialized. (not the whole status is dumped
+     * for transmission issue)
+     */
     getListenerView(playerID2Track: number, viewNRows: number, viewNCols: number): IPayLoadJson {
         let leftTop: IPoint = null;
         let mapString: string = '';
