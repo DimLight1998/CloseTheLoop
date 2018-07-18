@@ -3,28 +3,36 @@ import { IClientAdapter } from './IAdapter';
 import CameraController from './CameraController';
 import { GameRoom } from './GameRoom';
 
+// use a when deploy, use b when develop
+import tinycolor = require('./Lib/tinycolor.js');    // a
+// import 'tinycolor2';                                 // b
+
 const { ccclass, property } = cc._decorator;
 
 @ccclass
 export default class GameView extends cc.Component {
-    static colorList: cc.Color[] = [
-        cc.color(255, 255, 255),
-        cc.color(229, 115, 115),
-        cc.color(186, 104, 200),
-        cc.color(121, 134, 203),
-        cc.color(79, 195, 247),
-        cc.color(77, 182, 172),
-        cc.color(174, 213, 129),
-        cc.color(255, 241, 118),
-        cc.color(255, 183, 77),
-        cc.color(161, 136, 127),
-        cc.color(144, 164, 174),
-        cc.color(130, 119, 23),
-        cc.color(255, 111, 0),
-        cc.color(62, 39, 35),
-        cc.color(27, 94, 32),
-        cc.color(255, 255, 255) // white for wall
+    static colorList: tinycolorInstance[] = [
+        tinycolor('rgb(255, 255, 255)'),
+        tinycolor('rgb(229, 115, 115)'),
+        tinycolor('rgb(186, 104, 200)'),
+        tinycolor('rgb(121, 134, 203)'),
+        tinycolor('rgb(79, 195, 247)'),
+        tinycolor('rgb(77, 182, 172)'),
+        tinycolor('rgb(174, 213, 129)'),
+        tinycolor('rgb(255, 241, 118)'),
+        tinycolor('rgb(255, 183, 77)'),
+        tinycolor('rgb(161, 136, 127)'),
+        tinycolor('rgb(144, 164, 174)'),
+        tinycolor('rgb(130, 119, 23)'),
+        tinycolor('rgb(255, 111, 0)'),
+        tinycolor('rgb(62, 39, 35)'),
+        tinycolor('rgb(27, 94, 32)'),
+        tinycolor('rgb(255, 255, 255)')
     ];
+
+    static toRGBTuple(color: tinycolorInstance): [number, number, number] {
+        return [color.toRgb().r, color.toRgb().g, color.toRgb().b];
+    }
 
     @property(cc.Node)
     cameraNode: cc.Node = null;
@@ -176,7 +184,7 @@ export default class GameView extends cc.Component {
                 this.cameraNode.getComponent<CameraController>(CameraController).setFollower(this.headRoot.children[i]);
             }
 
-            this.headRoot.children[i].color = GameView.colorList[info.playerID];
+            this.headRoot.children[i].color = cc.color(...GameView.toRGBTuple(GameView.colorList[info.playerID]));
 
             if (info.playerID === this.myPlayerID) {// fixme
                 console.log(info.tracks.length);
@@ -220,14 +228,16 @@ export default class GameView extends cc.Component {
             for (let c: number = this.leftTop.y; c < this.leftTop.y + this.nCols; c++) {
                 this.colorTiles[r][c].position = this.trackTiles[r][c].position = this.getRowColPosition(r, c);
 
-                this.colorTiles[r][c].color = GameView.colorList[this.colorMap[r][c]];
+                this.colorTiles[r][c].color =
+                    cc.color(...GameView.toRGBTuple(GameView.colorList[this.colorMap[r][c]]));
                 if (this.colorMap[r][c] === 15) { // wall
                     this.colorTiles[r][c].getComponent(cc.Sprite).spriteFrame = this.wallFrame;
                 } else {
                     this.colorTiles[r][c].getComponent(cc.Sprite).spriteFrame = this.squareFrame;
                 }
 
-                this.trackTiles[r][c].color = GameView.colorList[this.trackMap[r][c]];
+                this.trackTiles[r][c].color =
+                    cc.color(...GameView.toRGBTuple(GameView.colorList[this.trackMap[r][c]]));
                 this.trackTiles[r][c].getComponent(cc.Sprite).spriteFrame = this.squareFrame;
                 if (this.trackMap[r][c] === 0) { // space
                     this.trackTiles[r][c].opacity = 0;
