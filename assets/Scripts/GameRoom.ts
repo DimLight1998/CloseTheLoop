@@ -144,13 +144,34 @@ export class GameRoom {
      * update all players' location, logically.
      */
     updatePlayerPos(): void {
-        for (const player of this.serverPlayerInfos) {
+        for (let player of this.serverPlayerInfos) {
             if (player.state === 0) { // alive
+
+                if (this.colorMap[player.headPos.x][player.headPos.y] !== player.playerID) {
+                    this.trackMap[player.headPos.x][player.headPos.y] = player.playerID;
+
+                    if (player.headDirection !== player.nextDirection) {
+                        let a: number = player.headDirection;
+                        let b: number = player.nextDirection;
+                        let res: number;
+                        if ((a + 1) % 4 !== b) {// anti clock wise
+                            res = (a + 1) % 4;
+                        } else {// clock wise
+                            res = a;
+                        }
+                        player.tracks.push([player.headPos.x, player.headPos.y, res]);
+                    }
+                }
+
                 player.headDirection = player.nextDirection;
                 const vector: IPoint = GameRoom.directions[player.headDirection];
-                player.headPos.x += vector.x;
-                player.headPos.y += vector.y;
-                // todo update its tracks
+
+                if (this.atBorder(player.headPos.x + vector.x, player.headPos.y + vector.y)) {
+                    player.state = 2;// debug use, no final implementation, fixme
+                } else {
+                    player.headPos.x += vector.x;
+                    player.headPos.y += vector.y;
+                }
             }
         }
     }

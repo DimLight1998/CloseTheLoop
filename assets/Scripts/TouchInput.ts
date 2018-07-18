@@ -39,6 +39,7 @@ export default class TouchInput extends cc.Component {
                 if (this.view !== null) {
                     this.view.changeDirection(dir);
                 }
+                this.prevPos = curPos;
             }
         }
     }
