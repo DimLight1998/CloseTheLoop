@@ -21,6 +21,7 @@ export class GameRoom {
     playerNum: number;// do not exceed 14
     timer: number;
     serverAdapter: IServerAdapter = null;
+    player2Execute: number[] = [];
 
     constructor(nRows: number, nCols: number, playerNum: number) {
         this.nRows = nRows;
@@ -134,6 +135,12 @@ export class GameRoom {
         }
     }
 
+    add2ExecutionList(playerID: number): void {
+        if (this.player2Execute.indexOf(playerID) === -1) {
+            this.player2Execute.push(playerID);
+        }
+    }
+
     updatePlayerPos(): void {
         for (let player of this.serverPlayerInfos) {
             if (player.state === 0) { // alive
@@ -158,7 +165,7 @@ export class GameRoom {
                 const vector: IPoint = GameRoom.directions[player.headDirection];
 
                 if (this.atBorder(player.headPos.x + vector.x, player.headPos.y + vector.y)) {
-                    player.state = 2;// debug use, no final implementation, fixme
+                    this.add2ExecutionList(player.playerID);
                 } else {
                     player.headPos.x += vector.x;
                     player.headPos.y += vector.y;
@@ -169,7 +176,9 @@ export class GameRoom {
 
     updateRound(): void {
         // todo there are a lot to do
+        this.player2Execute = [];
         this.updatePlayerPos();
+        this.executePlayers();
         if (this.serverAdapter !== null) {
             this.serverAdapter.dispatchNewWorld();
         }
@@ -249,4 +258,22 @@ export class GameRoom {
         };
     }
 
+    executePlayers(): void {
+        for (let i: number = 0; i < this.nRows; i++) {
+            for (let j: number = 0; j < this.nCols; j++) {
+                if (this.player2Execute.indexOf(this.colorMap[i][j]) !== -1) {
+                    this.colorMap[i][j] = 0;
+                }
+                if (this.player2Execute.indexOf(this.trackMap[i][j]) !== -1) {
+                    this.trackMap[i][j] = 0;
+                }
+            }
+        }
+        for (let player of this.serverPlayerInfos) {
+            if (this.player2Execute.indexOf(player.playerID) !== -1) {
+                player.tracks = [];
+                player.state = 2;
+            }
+        }
+    }
 }
