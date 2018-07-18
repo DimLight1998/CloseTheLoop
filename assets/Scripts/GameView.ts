@@ -52,6 +52,9 @@ export default class GameView extends cc.Component {
     @property(cc.SpriteFrame)
     wallFrame: cc.SpriteFrame = null;
 
+    @property(cc.SpriteFrame)
+    groundBarFrame: cc.SpriteFrame = null;
+
     @property
     nextDuration: number = 200;// 200ms per round
 
@@ -230,6 +233,10 @@ export default class GameView extends cc.Component {
                     cc.color(...GameView.toRGBTuple(GameView.colorList[this.colorMap[r][c]]));
                 if (this.colorMap[r][c] === 15) { // wall
                     this.colorTiles[r][c].getComponent(cc.Sprite).spriteFrame = this.wallFrame;
+                } else if (this.colorMap[r][c] !== 0 &&
+                    r + 1 < this.leftTop.x + this.nRows &&
+                    this.colorMap[r + 1][c] === 0) {
+                    this.colorTiles[r][c].getComponent(cc.Sprite).spriteFrame = this.groundBarFrame;
                 } else {
                     this.colorTiles[r][c].getComponent(cc.Sprite).spriteFrame = this.squareFrame;
                 }

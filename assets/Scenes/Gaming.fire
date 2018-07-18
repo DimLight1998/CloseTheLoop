@@ -354,9 +354,13 @@
     "wallFrame": {
       "__uuid__": "83b29243-0ba2-46a5-a53b-adf27810ee75"
     },
+    "groundBarFrame": {
+      "__uuid__": "b80f27d1-4c42-48d7-82f0-c816e0bd637f"
+    },
     "nextDuration": 200,
-    "timeEpsilon": 1,
-    "trackOpacity": 128
+    "timeEpsilon": 3,
+    "trackOpacity": 128,
+    "angleOpacity": 180
   },
   {
     "__type__": "cc.Node",
@@ -461,7 +465,7 @@
       "__id__": 2
     },
     "_enabled": true,
-    "judgeDistance": 5,
+    "judgeDistance": 20,
     "view": {
       "__id__": 7
     }
