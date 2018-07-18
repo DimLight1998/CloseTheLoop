@@ -56,6 +56,9 @@ export default class GameView extends cc.Component {
     @property
     trackOpacity: number = 128;
 
+    @property
+    angleOpacity: number = 180;
+
     colorRoot: cc.Node;
     trackRoot: cc.Node;
     headRoot: cc.Node;
@@ -118,6 +121,13 @@ export default class GameView extends cc.Component {
         }
     }
 
+    outOfView(row: number, col: number): boolean {
+        return row < this.leftTop.x ||
+            row >= this.leftTop.x + this.nRows ||
+            col < this.leftTop.y ||
+            col >= this.leftTop.y + this.nCols;
+    }
+
     getRowColPosition(row: number, col: number): cc.Vec2 {
         const spriteWidth: number = this.colorRoot.children[0].width;
         const spriteHeight: number = this.colorRoot.children[0].height;
@@ -134,16 +144,35 @@ export default class GameView extends cc.Component {
         for (let i: number = 0; i < this.players.length; i++) {
             const info: IPlayerInfo = this.players[i];
 
-            this.headRoot.children[i].position = this.getRowColPosition(info.headPos.x - GameRoom.directions[info.headDirection].x,
-                info.headPos.y - GameRoom.directions[info.headDirection].y);
+            let ix: number;
+            let iy: number;
+            if (info.state === 0) { // alive
+                ix = info.headPos.x - GameRoom.directions[info.headDirection].x;
+                iy = info.headPos.y - GameRoom.directions[info.headDirection].y;
+            } else {
+                ix = info.headPos.x;
+                iy = info.headPos.y;
+            }
+
+            this.headRoot.children[i].position = this.getRowColPosition(ix, iy);
 
             // camera code
             if (info.playerID === this.myPlayerID) {
                 this.cameraNode.getComponent<CameraController>(CameraController).setFollower(this.headRoot.children[i]);
             }
 
-            this.headRoot.children[i].color = GameView.colorList[i];
+            this.headRoot.children[i].color = GameView.colorList[info.playerID];
 
+            if (info.playerID === this.myPlayerID) {// fixme
+                console.log(info.tracks.length);
+            }
+
+            for (let t of info.tracks) {
+                if (!this.outOfView(t[0], t[1])) {
+                    this.trackTiles[t[0]][t[1]].getComponent(cc.Sprite).spriteFrame = this.triangleFrames[t[2]];
+                    this.trackTiles[t[0]][t[1]].opacity = this.angleOpacity;
+                }
+            }
             // todo player die, animation, explosion
         }
     }
@@ -212,10 +241,12 @@ export default class GameView extends cc.Component {
         const ratio: number = dt / this.timeLeft;
         for (let i: number = 0; i < this.players.length; i++) {
             const info: IPlayerInfo = this.players[i];
-            const playerNode: cc.Node = this.headRoot.children[i];
-            const targetPos: cc.Vec2 = this.getRowColPosition(info.headPos.x, info.headPos.y);
-            const deltaVector: cc.Vec2 = targetPos.sub(playerNode.position).mul(ratio);
-            playerNode.position = playerNode.position.add(deltaVector);
+            if (info.state === 0) {
+                const playerNode: cc.Node = this.headRoot.children[i];
+                const targetPos: cc.Vec2 = this.getRowColPosition(info.headPos.x, info.headPos.y);
+                const deltaVector: cc.Vec2 = targetPos.sub(playerNode.position).mul(ratio);
+                playerNode.position = playerNode.position.add(deltaVector);
+            }
         }
         this.timeLeft -= dt;
         if (this.timeLeft <= 0) {
