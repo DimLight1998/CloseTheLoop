@@ -2,6 +2,9 @@ import { IRoomMangerAdapter } from './IAdapter';
 import LocalGameController from './LocalGameController';
 import { LocalServer } from './LocalServer';
 
+/**
+ * This class is used for room management for a local game.
+ */
 export class LocalRoomManger implements IRoomMangerAdapter {
 
     ctrl: LocalGameController = null;
@@ -13,7 +16,10 @@ export class LocalRoomManger implements IRoomMangerAdapter {
         this.onlyServer = new LocalServer(this.ctrl);
     }
 
-    // iRoom
+    /**
+     * Try to allocate a room for the player and return the id of the player,
+     * which will eventually success.
+     */
     handleRegisterPlayer(): [number, number] {
         while (true) {
             if (this.onlyServer === null) {

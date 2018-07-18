@@ -81,6 +81,9 @@ export default class GameView extends cc.Component {
         this.clientAdapter = adapter;
     }
 
+    /**
+     * update the view from given information.
+     */
     public setLeftTop(newLeftTop: IPoint, mapString: string): void {
         let cnt: number = 0;
         this.colorTiles = [];
@@ -106,6 +109,10 @@ export default class GameView extends cc.Component {
         this.leftTop = newLeftTop;
     }
 
+    /**
+     * Call this function after game starts (the game should have a client adapter).
+     * This function should only be called once in a game.
+     */
     public startGame(): void { // call it after setting client adapter
 
         [this.myPlayerID, this.myRoomID] = this.clientAdapter.registerPlayer();
@@ -115,11 +122,15 @@ export default class GameView extends cc.Component {
         this.fetchNewWorld();
     }
 
+    /**
+     * Change the direction of the current player.
+     */
     public changeDirection(direction: number): void {
         if (this.clientAdapter !== null) {
             this.clientAdapter.changeDirection(this.myPlayerID, direction);
         }
     }
+
 
     outOfView(row: number, col: number): boolean {
         return row < this.leftTop.x ||
@@ -128,11 +139,15 @@ export default class GameView extends cc.Component {
             col >= this.leftTop.y + this.nCols;
     }
 
+    /**
+     * Get location on the view for a given logical coordinate.
+     */
     getRowColPosition(row: number, col: number): cc.Vec2 {
         const spriteWidth: number = this.colorRoot.children[0].width;
         const spriteHeight: number = this.colorRoot.children[0].height;
         return cc.v2(spriteWidth * col, -spriteHeight * row);
     }
+
 
     updateHeads(): void {
         while (this.headRoot.childrenCount > this.players.length) {
@@ -195,7 +210,7 @@ export default class GameView extends cc.Component {
                 this.nextDuration -= this.timeEpsilon;
             }
         }
-        console.log(this.nextDuration);// fixme
+        console.log(this.nextDuration); // todo fixme
         this.timeLeft = this.nextDuration / 1000;
     }
 
@@ -224,6 +239,10 @@ export default class GameView extends cc.Component {
         this.updateHeads();
     }
 
+    /**
+     * add colors and tracks sprites for later manipulation.
+     * only tiles in the view will be rendered.
+     */
     onLoad(): void {
         this.colorRoot = this.node.getChildByName('ColorMapRoot');
         this.trackRoot = this.node.getChildByName('TrackMapRoot');
@@ -234,6 +253,10 @@ export default class GameView extends cc.Component {
         }
     }
 
+    /**
+     * change all players' position based on the time.
+     * if the map needs to be updated, update it.
+     */
     update(dt: number): void {
         if (this.timeLeft < dt) {
             this.timeLeft = dt;
