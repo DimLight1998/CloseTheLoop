@@ -351,7 +351,7 @@ export class GameRoom {
             console.log('Warning! next update should happen ' + -duration + 'ms ago!');
             duration = 0;
         } else {
-            // console.log('actually compute costs ' + (currentTime - this.lastUpdateTime) + 'ms');// fixme
+            console.log('actually compute costs ' + (currentTime - this.lastUpdateTime) + 'ms');// fixme
         }
         this.timer = setTimeout(this.updateRound.bind(this), duration);
     }
