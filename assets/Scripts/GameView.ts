@@ -178,9 +178,9 @@ export default class GameView extends cc.Component {
 
             this.headRoot.children[i].color = GameView.colorList[info.playerID];
 
-            if (info.playerID === this.myPlayerID) {// fixme
-                console.log(info.tracks.length);
-            }
+            // if (info.playerID === this.myPlayerID) {// fixme
+                // console.log(info.tracks.length);
+            // }
 
             for (let t of info.tracks) {
                 if (!this.outOfView(t[0], t[1])) {
@@ -210,7 +210,7 @@ export default class GameView extends cc.Component {
                 this.nextDuration -= this.timeEpsilon;
             }
         }
-        console.log(this.nextDuration); // todo fixme
+        // console.log(this.nextDuration); // todo fixme
         this.timeLeft = this.nextDuration / 1000;
     }
 
