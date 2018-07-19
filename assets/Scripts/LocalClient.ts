@@ -39,7 +39,7 @@ export class LocalClient implements IClientAdapter {
         }
     }
 
-    pushNewWorldResponse(infoString: string): void {
+    async pushNewWorldResponse(infoString: string): Promise<void> {
         if (this.waitingQueue.length === 0) {
             if (this.infoQueue.length > 0) {
                 console.log('Warning! Still have ' + this.infoQueue.length + ' round to consume!');

@@ -6,7 +6,6 @@ export default class CameraController extends cc.Component {
 
     public setFollower(follower: cc.Node): void {
         this.follower = follower;
-        this.node.position = follower.position;
     }
 
     update(): void {
