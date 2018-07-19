@@ -334,6 +334,9 @@
     "spritePrefab": {
       "__uuid__": "7b3c8fd1-d3d2-4137-9e18-5eac56cbd066"
     },
+    "playerPrefab": {
+      "__uuid__": "6470ee6b-6c9f-4673-8ce3-4edbca8cfa32"
+    },
     "squareFrame": {
       "__uuid__": "dc79874d-7b37-428f-a52f-01f2326d1265"
     },

@@ -43,6 +43,9 @@ export default class GameView extends cc.Component {
     @property(cc.Prefab)
     spritePrefab: cc.Prefab = null;
 
+    @property(cc.Prefab)
+    playerPrefab: cc.Prefab = null;
+
     @property(cc.SpriteFrame)
     squareFrame: cc.SpriteFrame = null;
 
@@ -162,7 +165,7 @@ export default class GameView extends cc.Component {
             this.headRoot.children[this.headRoot.childrenCount - 1].destroy();
         }
         while (this.headRoot.childrenCount < this.players.length) {
-            this.headRoot.addChild(cc.instantiate(this.spritePrefab));
+            this.headRoot.addChild(cc.instantiate(this.playerPrefab));
         }
         for (let i: number = 0; i < this.players.length; i++) {
             const info: IPlayerInfo = this.players[i];
