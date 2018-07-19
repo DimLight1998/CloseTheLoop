@@ -188,19 +188,26 @@ export default class GameView extends cc.Component {
         while (this.headRoot.childrenCount < this.players.length) {
             this.headRoot.addChild(cc.instantiate(this.playerPrefab));
         }
-        this.cameraNode.getComponent<CameraController>(CameraController).setFollower(this.headRoot.children[this.myPlayerID - 1]);
 
         for (let i: number = 0; i < this.players.length; i++) {
             const info: IPlayerInfo = this.players[i];
-
-            this.headRoot.children[i].active = GameRoom.isAlive(info);
 
             if (info.state === 3) {
                 const pos: cc.Vec2 = this.getRowColPosition(info.headPos.x, info.headPos.y);
                 this.headRoot.children[i].position = pos;
 
                 this.headRoot.children[i].color = this.darkColorList[info.playerID];
+
+                if (info.playerID === this.myPlayerID) {
+                    this.cameraNode.getComponent(CameraController).setFollower(this.headRoot.children[i]);
+                }
             } else if (info.state === 1) {
+                if (info.playerID === this.myPlayerID) {
+                    this.cameraNode.getComponent(CameraController).setFollower(null);
+                }
+
+                this.headRoot.children[i].position = cc.v2(1e9, 1e9);
+
                 const explosion: cc.Node = cc.instantiate(this.particlePrefab);
                 const particle: cc.ParticleSystem = explosion.getComponent(cc.ParticleSystem);
                 particle.startColor = particle.endColor = this.darkColorList[info.playerID];
@@ -281,9 +288,11 @@ export default class GameView extends cc.Component {
     }
 
     onWorldChange(deltaTime: number): void {
+        // let cur: number = Date.now();
         this.adjustDuration(deltaTime);
         this.updateTiles();
         this.updateHeads();
+        // console.log('world change costs ' + (Date.now() - cur) + 'ms');
     }
 
     /**

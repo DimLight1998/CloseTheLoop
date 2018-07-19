@@ -34,7 +34,7 @@ export interface IServerAdapter {
 
     handleRegisterToThisRoom(): number;
 
-    dispatchNewWorld(): void;// 向所有注册的客户端发送各自的数据
+    dispatchNewWorld(): Promise<void>;// 向所有注册的客户端发送各自的数据
 }
 
 export interface IRoomMangerAdapter {
