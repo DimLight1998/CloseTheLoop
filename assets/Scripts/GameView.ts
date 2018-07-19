@@ -27,8 +27,12 @@ export default class GameView extends cc.Component {
         tinycolor('#ffffff')
     ];
 
+    lightColorList: cc.Color[] = [];
+    darkColorList: cc.Color[] = [];
+
     static toRGBTuple(color: tinycolorInstance): [number, number, number] {
-        return [color.toRgb().r, color.toRgb().g, color.toRgb().b];
+        const tmp: ColorFormats.RGBA = color.toRgb();
+        return [tmp.r, tmp.g, tmp.b];
     }
 
     @property(cc.Node)
@@ -187,11 +191,10 @@ export default class GameView extends cc.Component {
                 this.cameraNode.getComponent<CameraController>(CameraController).setFollower(this.headRoot.children[i]);
             }
 
-            this.headRoot.children[i].color =
-                cc.color(...GameView.toRGBTuple(GameView.colorList[info.playerID].clone().darken(20)));
+            this.headRoot.children[i].color = this.darkColorList[info.playerID];
 
             // if (info.playerID === this.myPlayerID) {// fixme
-                // console.log(info.tracks.length);
+            // console.log(info.tracks.length);
             // }
 
             for (let t of info.tracks) {
@@ -226,14 +229,12 @@ export default class GameView extends cc.Component {
         this.timeLeft = this.nextDuration / 1000;
     }
 
-    onWorldChange(deltaTime: number): void {
-        this.adjustDuration(deltaTime);
+    updateTiles(): void {
         for (let r: number = this.leftTop.x; r < this.leftTop.x + this.nRows; r++) {
             for (let c: number = this.leftTop.y; c < this.leftTop.y + this.nCols; c++) {
                 this.colorTiles[r][c].position = this.trackTiles[r][c].position = this.getRowColPosition(r, c);
 
-                this.colorTiles[r][c].color =
-                    cc.color(...GameView.toRGBTuple(GameView.colorList[this.colorMap[r][c]]));
+                this.colorTiles[r][c].color = this.lightColorList[this.colorMap[r][c]];
                 if (this.colorMap[r][c] === 15) { // wall
                     this.colorTiles[r][c].getComponent(cc.Sprite).spriteFrame = this.wallFrame;
                 } else if (this.colorMap[r][c] !== 0 &&
@@ -244,8 +245,7 @@ export default class GameView extends cc.Component {
                     this.colorTiles[r][c].getComponent(cc.Sprite).spriteFrame = this.squareFrame;
                 }
 
-                this.trackTiles[r][c].color =
-                    cc.color(...GameView.toRGBTuple(GameView.colorList[this.trackMap[r][c]]));
+                this.trackTiles[r][c].color = this.lightColorList[this.trackMap[r][c]];
                 this.trackTiles[r][c].getComponent(cc.Sprite).spriteFrame = this.squareFrame;
                 if (this.trackMap[r][c] === 0) { // space
                     this.trackTiles[r][c].opacity = 0;
@@ -254,6 +254,11 @@ export default class GameView extends cc.Component {
                 }
             }
         }
+    }
+
+    onWorldChange(deltaTime: number): void {
+        this.adjustDuration(deltaTime);
+        this.updateTiles();
         this.updateHeads();
     }
 
@@ -262,6 +267,10 @@ export default class GameView extends cc.Component {
      * only tiles in the view will be rendered.
      */
     onLoad(): void {
+        for (let c of GameView.colorList) {
+            this.lightColorList.push(cc.color(...GameView.toRGBTuple(c)));
+            this.darkColorList.push(cc.color(...GameView.toRGBTuple(c.clone().darken(20))));
+        }
         this.colorRoot = this.node.getChildByName('ColorMapRoot');
         this.trackRoot = this.node.getChildByName('TrackMapRoot');
         this.headRoot = this.node.getChildByName('HeadRoot');

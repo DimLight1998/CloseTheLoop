@@ -24,6 +24,7 @@ export class GameRoom {
     serverAdapter: IServerAdapter = null;
     playersToClear: [number, boolean][] = [];
     potentialFillList: number[] = [];
+    rebornList: number[] = [];
 
     mapStatus: number[][] = null;
     maxT: number;
