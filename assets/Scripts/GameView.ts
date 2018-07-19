@@ -2,7 +2,7 @@ import { IPlayerInfo, IPoint, IPayLoadJson } from './IPlayerInfo';
 import { IClientAdapter } from './IAdapter';
 import CameraController from './CameraController';
 import { GameRoom } from './GameRoom';
-import tinycolor = require('./Lib/tinycolor.js'); // ignore the importing error
+import tinycolor = require('../Lib/tinycolor.js');
 
 const { ccclass, property } = cc._decorator;
 
