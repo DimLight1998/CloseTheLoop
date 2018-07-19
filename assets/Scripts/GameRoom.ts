@@ -245,27 +245,6 @@ export class GameRoom {
         /**
          * This function will consider color and track with id `walledId` as wall.
          */
-        function fillingAux(
-            queue: [number, number][],
-            x: number,
-            y: number,
-            walledId: number,
-            room: GameRoom,
-            fillStatus: number[][],
-            targetValue: number,
-            storage: [number, number][]
-        ): boolean {
-            if (room.atBorder(x, y)) {
-                return true;
-            }
-            if (room.colorMap[x][y] !== walledId && room.trackMap[x][y] !== walledId
-                && fillStatus[x][y] !== targetValue) {
-                fillStatus[x][y] = targetValue;
-                queue.push([x, y]);
-                storage.push([x, y]);
-            }
-            return false;
-        }
 
         // since there are modification to the clearList, we should update potential list
         let excludeList: number[] = this.playersToClear.map(p => p[0]);
@@ -280,22 +259,22 @@ export class GameRoom {
                 for (let c: number = 0; c < this.nCols; c++) {
                     if (this.mapStatus[r][c] !== this.maxT && this.colorMap[r][c] !== playerId && this.trackMap[r][c] !== playerId) {
 
-                        console.log(r, c, this.maxT);
-                        const map: number[][] = [];
-                        for (let i: number = 0; i < this.nRows; i++) {
-                            const line: number[] = [];
-                            for (let j: number = 0; j < this.nCols; j++) {
-                                if (this.colorMap[i][j] === playerId
-                                    || this.trackMap[i][j] === playerId
-                                    || this.mapStatus[i][j] === this.maxT) {
-                                    line.push(1);
-                                } else {
-                                    line.push(0);
-                                }
-                            }
-                            map.push(line);
-                        }
-                        console.log(map);
+                        // console.log(r, c, this.maxT);
+                        // const map: number[][] = [];
+                        // for (let i: number = 0; i < this.nRows; i++) {
+                        //     const line: number[] = [];
+                        //     for (let j: number = 0; j < this.nCols; j++) {
+                        //         if (this.colorMap[i][j] === playerId
+                        //             || this.trackMap[i][j] === playerId
+                        //             || this.mapStatus[i][j] === this.maxT) {
+                        //             line.push(1);
+                        //         } else {
+                        //             line.push(0);
+                        //         }
+                        //     }
+                        //     map.push(line);
+                        // }
+                        // console.log(map);
 
                         // start flood fill
                         let adjToWall: boolean = false;
@@ -326,7 +305,7 @@ export class GameRoom {
                         }
 
                         if (!adjToWall) {
-                            console.log(storage);// fixme
+                            // console.log(storage);
 
                             // this block is not adjacent to a wall, so it should be colored
                             for (const [x, y] of storage) {
