@@ -29,7 +29,7 @@ export class LocalServer implements IServerAdapter {
         this.room.changeDirection(playerID, direction);
     }
     handleRegisterToThisRoom(): number {
-        return this.room.registerPlayer();
+        return this.room.replaceAIWithPlayer();
     }
     dispatchNewWorld(): void {
         for (let listener of this.listeners) {

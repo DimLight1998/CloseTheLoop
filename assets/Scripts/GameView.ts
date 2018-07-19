@@ -50,6 +50,9 @@ export default class GameView extends cc.Component {
     @property(cc.Prefab)
     playerPrefab: cc.Prefab = null;
 
+    @property(cc.Prefab)
+    particlePrefab: cc.Prefab = null;
+
     @property(cc.SpriteFrame)
     squareFrame: cc.SpriteFrame = null;
 
@@ -77,12 +80,15 @@ export default class GameView extends cc.Component {
     colorRoot: cc.Node;
     trackRoot: cc.Node;
     headRoot: cc.Node;
+    particleRoot: cc.Node;
     colorTiles: cc.Node[][] = null;
     trackTiles: cc.Node[][] = null;
 
     colorMap: number[][] = null;
     trackMap: number[][] = null;
     players: IPlayerInfo[] = [];
+
+    oldColorMap: number[][] = null;
 
     myPlayerID: number;
     myRoomID: number;
@@ -96,6 +102,15 @@ export default class GameView extends cc.Component {
         this.clientAdapter = adapter;
     }
 
+    getOldColor(r: number, c: number): number {
+        if (this.oldColorMap !== null
+            && this.oldColorMap[r] !== undefined
+            && this.oldColorMap[r][c] !== undefined) {
+            return this.oldColorMap[r][c];
+        }
+        return null;
+    }
+
     /**
      * update the view from given information.
      */
@@ -103,6 +118,7 @@ export default class GameView extends cc.Component {
         let cnt: number = 0;
         this.colorTiles = [];
         this.trackTiles = [];
+        this.oldColorMap = this.colorMap;
         this.colorMap = [];
         this.trackMap = [];
         for (let i: number = 0; i < this.nRows; i++) {
@@ -134,6 +150,7 @@ export default class GameView extends cc.Component {
 
         this.clientAdapter.registerViewPort(this.myPlayerID, this.myRoomID,
             this.nRows, this.nCols, this.refreshData.bind(this));
+
         this.fetchNewWorld();
     }
 
@@ -171,31 +188,27 @@ export default class GameView extends cc.Component {
         while (this.headRoot.childrenCount < this.players.length) {
             this.headRoot.addChild(cc.instantiate(this.playerPrefab));
         }
+        this.cameraNode.getComponent<CameraController>(CameraController).setFollower(this.headRoot.children[this.myPlayerID - 1]);
+
         for (let i: number = 0; i < this.players.length; i++) {
             const info: IPlayerInfo = this.players[i];
 
-            let ix: number;
-            let iy: number;
-            if (info.state === 0) { // alive
-                ix = info.headPos.x - GameRoom.directions[info.headDirection].x;
-                iy = info.headPos.y - GameRoom.directions[info.headDirection].y;
-            } else {
-                ix = info.headPos.x;
-                iy = info.headPos.y;
+            this.headRoot.children[i].active = GameRoom.isAlive(info);
+
+            if (info.state === 3) {
+                const pos: cc.Vec2 = this.getRowColPosition(info.headPos.x, info.headPos.y);
+                this.headRoot.children[i].position = pos;
+
+                this.headRoot.children[i].color = this.darkColorList[info.playerID];
+            } else if (info.state === 1) {
+                const explosion: cc.Node = cc.instantiate(this.particlePrefab);
+                const particle: cc.ParticleSystem = explosion.getComponent(cc.ParticleSystem);
+                particle.startColor = particle.endColor = this.darkColorList[info.playerID];
+                particle.endColor.setA(0);
+                explosion.position = this.getRowColPosition(info.headPos.x, info.headPos.y);
+
+                this.particleRoot.addChild(cc.instantiate(explosion));
             }
-
-            this.headRoot.children[i].position = this.getRowColPosition(ix, iy);
-
-            // camera code
-            if (info.playerID === this.myPlayerID) {
-                this.cameraNode.getComponent<CameraController>(CameraController).setFollower(this.headRoot.children[i]);
-            }
-
-            this.headRoot.children[i].color = this.darkColorList[info.playerID];
-
-            // if (info.playerID === this.myPlayerID) {// fixme
-            // console.log(info.tracks.length);
-            // }
 
             for (let t of info.tracks) {
                 if (!this.outOfView(t[0], t[1])) {
@@ -232,9 +245,9 @@ export default class GameView extends cc.Component {
     updateTiles(): void {
         for (let r: number = this.leftTop.x; r < this.leftTop.x + this.nRows; r++) {
             for (let c: number = this.leftTop.y; c < this.leftTop.y + this.nCols; c++) {
+
                 this.colorTiles[r][c].position = this.trackTiles[r][c].position = this.getRowColPosition(r, c);
 
-                this.colorTiles[r][c].color = this.lightColorList[this.colorMap[r][c]];
                 if (this.colorMap[r][c] === 15) { // wall
                     this.colorTiles[r][c].getComponent(cc.Sprite).spriteFrame = this.wallFrame;
                 } else if (this.colorMap[r][c] !== 0 &&
@@ -251,6 +264,17 @@ export default class GameView extends cc.Component {
                     this.trackTiles[r][c].opacity = 0;
                 } else {
                     this.trackTiles[r][c].opacity = this.trackOpacity;
+                }
+
+                this.colorTiles[r][c].stopAllActions();
+                const oldTile: number = this.getOldColor(r, c);
+                if (oldTile !== null && this.colorMap[r][c] !== oldTile) {
+                    const newColor: cc.Color = this.lightColorList[this.colorMap[r][c]];
+                    this.colorTiles[r][c].color = this.lightColorList[oldTile];
+                    this.colorTiles[r][c].runAction(cc.tintTo(this.nextDuration / 1000,
+                        newColor.getR(), newColor.getG(), newColor.getB()));
+                } else {
+                    this.colorTiles[r][c].color = this.lightColorList[this.colorMap[r][c]];
                 }
             }
         }
@@ -274,6 +298,7 @@ export default class GameView extends cc.Component {
         this.colorRoot = this.node.getChildByName('ColorMapRoot');
         this.trackRoot = this.node.getChildByName('TrackMapRoot');
         this.headRoot = this.node.getChildByName('HeadRoot');
+        this.particleRoot = this.node.getChildByName('ParticleRoot');
         for (let i: number = this.nRows * this.nCols; i > 0; i--) {
             this.colorRoot.addChild(cc.instantiate(this.spritePrefab));
             this.trackRoot.addChild(cc.instantiate(this.spritePrefab));

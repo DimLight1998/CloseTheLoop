@@ -59,7 +59,7 @@ export class GameRoom {
     }
 
     static isAlive(info: IPlayerInfo): boolean {
-        return info.state === 0;
+        return info.state === 0 || info.state === 3;
     }
 
     public setServerAdapter(adapter: IServerAdapter): void {
@@ -119,27 +119,21 @@ export class GameRoom {
      */
     initAIPlayers(): void {
         this.serverPlayerInfos = [];
+        this.rebornList = [];
         for (let i: number = 0; i < this.playerNum; i++) {
             const info: IServerPlayerInfo = {
                 playerID: i + 1, // 0 reserverd for space
                 isAI: true,
-                aiInstance: new GameAI(this),
+                aiInstance: new GameAI(this, i + 1),
                 headPos: null, // do it later
                 headDirection: 0, // up
                 nBlocks: 0, // do it later
-                state: 0, // 0 活着，1正在爆炸，2死了
+                state: 2, // 0 活着，1正在爆炸，2死了
                 nextDirection: 0, // same as headDirection
                 tracks: []
             };
-            // info.aiInstance.registerEvent(this.eventEmitter); todo
-            info.headPos = this.randomSpawnNewPlayer(info.playerID);
-            if (info.headPos !== null) {
-                info.nBlocks = 9;
-            } else {
-                info.nBlocks = 0;
-                info.state = 2;
-            }
             this.serverPlayerInfos.push(info);
+            this.rebornList.push(info.playerID);
         }
     }
 
@@ -157,6 +151,8 @@ export class GameRoom {
         for (let player of this.serverPlayerInfos) {
             if (player.state === 1) {
                 player.state = 2;
+            } else if (player.state === 3) {
+                player.state = 0;
             }
         }
     }
@@ -330,6 +326,17 @@ export class GameRoom {
         }
     }
 
+    updatePlayerReborn(): void {
+        for (let playerID of this.rebornList) {
+            const info: IServerPlayerInfo = this.serverPlayerInfos[playerID - 1];
+            info.headPos = this.randomSpawnNewPlayer(playerID);
+            if (info.headPos !== null) {
+                info.state = 3;
+            }
+        }
+        this.rebornList = [];
+    }
+
     /**
      * update all players' position logically. if it has a server adapter, dispatch the world to other clients.
      */
@@ -339,10 +346,12 @@ export class GameRoom {
         this.potentialFillList = [];
         this.updateDyingPlayers();
         this.updatePlayerPos();
+        this.updatePlayerReborn();
         this.updateTrackCutting();
         this.updatePlayerOverlapping();
         this.updateColorFilling();
         this.clearPlayers();
+        this.updateDeadPlayer();
         if (this.serverAdapter !== null) {
             this.serverAdapter.dispatchNewWorld();
         }
@@ -361,7 +370,7 @@ export class GameRoom {
      * add a real player into serverPlayerInfos by replacing a random AI player,
      * return original ID of the player. If no such AI player found, return null.
      */
-    registerPlayer(): number {
+    replaceAIWithPlayer(): number {
         const validIndexes: number[] = [];
         for (let i: number = 0; i < this.serverPlayerInfos.length; i++) {
             if (this.serverPlayerInfos[i].isAI) {
@@ -377,6 +386,12 @@ export class GameRoom {
         obj.aiInstance = null;
         // todo respawn obj
         return obj.playerID;
+    }
+
+    replacePlayerWithAI(playerID: number): void {
+        const obj: IServerPlayerInfo = this.serverPlayerInfos[playerID - 1];
+        obj.isAI = true;
+        obj.aiInstance = new GameAI(this, playerID);
     }
 
     /**
@@ -477,6 +492,14 @@ export class GameRoom {
             player.tracks = [];
             if (p[1]) {// @refactor
                 player.state = 1;
+            }
+        }
+    }
+
+    updateDeadPlayer(): void {
+        for (let info of this.serverPlayerInfos) {
+            if (info.state === 2) {
+                this.rebornList.push(info.playerID);
             }
         }
     }
