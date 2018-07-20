@@ -54,8 +54,9 @@ export class LocalClient implements IClientAdapter {
         }
     }
 
-    registerPlayer(): [number, number] {
-        return this.ctrl.roomManger.handleRegisterPlayer();
+    registerPlayer(onSuccess: (playerId: number, roomId: number) => void): void {
+        let ret: [number, number] = this.ctrl.roomManger.handleRegisterPlayer();
+        onSuccess(ret[0], ret[1]);
     }
 
     registerViewPort(playerID2Track: number, roomID: number, nRows: number, nCols: number,
