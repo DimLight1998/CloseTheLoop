@@ -145,8 +145,9 @@ export default class GameView extends cc.Component {
      * This function should only be called once in a game.
      */
     public startGame(): void { // call it after setting client adapter
-
-        [this.myPlayerID, this.myRoomID] = this.clientAdapter.registerPlayer();
+        this.clientAdapter.registerPlayer(
+            (playerId, roomId) => [this.myPlayerID, this.myRoomID] = [playerId, roomId]
+        );
 
         this.clientAdapter.registerViewPort(this.myPlayerID, this.myRoomID,
             this.nRows, this.nCols, this.refreshData.bind(this));
