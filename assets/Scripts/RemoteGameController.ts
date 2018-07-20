@@ -20,7 +20,7 @@ export default class NewClass extends cc.Component {
         this.client = new RemoteClient(this.view, this.hostname, this.port, () => {
             this.view.startGame();
         }, () => {
-            console.log('error');// todo
+            console.log('close');// todo
         });
     }
 }
