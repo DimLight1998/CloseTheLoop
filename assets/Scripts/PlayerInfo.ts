@@ -1,26 +1,26 @@
-export interface IPoint {
+export class MyPoint {
     x: number;
     y: number;
 }
 
-export interface IColor {
+export class MyColor {
     r: number;
     g: number;
     b: number;
     a: number;
 }
 
-export interface IPlayerInfo {
+export class PlayerInfo {
     playerID: number;
-    headPos: IPoint;
+    headPos: MyPoint;
     headDirection: number;
     nBlocks: number;
     state: number;// 0 活着，1正在爆炸，2死了
     tracks: [number, number, number][];
 }
 
-export interface IPayLoadJson {
+export class PayLoadJson {
     mapString: string;
-    players: IPlayerInfo[];
-    leftTop: IPoint;
+    players: PlayerInfo[];
+    leftTop: MyPoint;
 }

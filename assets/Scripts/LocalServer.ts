@@ -2,7 +2,7 @@ import { IServerAdapter } from './IAdapter';
 import LocalGameController from './LocalGameController';
 import { GameRoom } from './GameRoom';
 import { LocalClient } from './LocalClient';
-import { IPayLoadJson } from './IPlayerInfo';
+import { PayLoadJson } from './PlayerInfo';
 
 export interface ILocalListener {
     client: LocalClient;
@@ -33,7 +33,7 @@ export class LocalServer implements IServerAdapter {
     }
     async dispatchNewWorld(): Promise<void> {
         for (let listener of this.listeners) {
-            const obj: IPayLoadJson = this.room.getListenerView(listener.playerID2Track, listener.viewNRows, listener.viewNCols);
+            const obj: PayLoadJson = this.room.getListenerView(listener.playerID2Track, listener.viewNRows, listener.viewNCols);
             await listener.client.pushNewWorldResponse(JSON.stringify(obj));
         }
     }

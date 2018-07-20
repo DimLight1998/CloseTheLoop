@@ -1,7 +1,7 @@
 import { GameAI } from './GameAI';
-import { IPlayerInfo } from './IPlayerInfo';
+import { PlayerInfo } from './PlayerInfo';
 
-export interface IServerPlayerInfo extends IPlayerInfo {
+export class ServerPlayerInfo extends PlayerInfo {
     isAI: boolean;
     aiInstance: GameAI;
     nextDirection: number;

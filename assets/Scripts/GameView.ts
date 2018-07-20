@@ -1,4 +1,4 @@
-import { IPlayerInfo, IPoint, IPayLoadJson } from './IPlayerInfo';
+import { PlayerInfo, MyPoint, PayLoadJson } from './PlayerInfo';
 import { IClientAdapter } from './IAdapter';
 import CameraController from './CameraController';
 import { GameRoom } from './GameRoom';
@@ -86,13 +86,13 @@ export default class GameView extends cc.Component {
 
     colorMap: number[][] = null;
     trackMap: number[][] = null;
-    players: IPlayerInfo[] = [];
+    players: PlayerInfo[] = [];
 
     oldColorMap: number[][] = null;
 
     myPlayerID: number;
     myRoomID: number;
-    leftTop: IPoint;
+    leftTop: MyPoint;
 
     clientAdapter: IClientAdapter;
 
@@ -114,7 +114,7 @@ export default class GameView extends cc.Component {
     /**
      * update the view from given information.
      */
-    public setLeftTop(newLeftTop: IPoint, mapString: string): void {
+    public setLeftTop(newLeftTop: MyPoint, mapString: string): void {
         let cnt: number = 0;
         this.colorTiles = [];
         this.trackTiles = [];
@@ -146,13 +146,15 @@ export default class GameView extends cc.Component {
      */
     public startGame(): void { // call it after setting client adapter
         this.clientAdapter.registerPlayer(
-            (playerId, roomId) => [this.myPlayerID, this.myRoomID] = [playerId, roomId]
+            (playerId: number, roomId: number): void => {
+                [this.myPlayerID, this.myRoomID] = [playerId, roomId];
+
+                this.clientAdapter.registerViewPort(this.myPlayerID, this.myRoomID,
+                    this.nRows, this.nCols, this.refreshData.bind(this));
+
+                this.fetchNewWorld();
+            }
         );
-
-        this.clientAdapter.registerViewPort(this.myPlayerID, this.myRoomID,
-            this.nRows, this.nCols, this.refreshData.bind(this));
-
-        this.fetchNewWorld();
     }
 
     /**
@@ -191,7 +193,7 @@ export default class GameView extends cc.Component {
         }
 
         for (let i: number = 0; i < this.players.length; i++) {
-            const info: IPlayerInfo = this.players[i];
+            const info: PlayerInfo = this.players[i];
 
             if (info.state === 3) {
                 const pos: cc.Vec2 = this.getRowColPosition(info.headPos.x, info.headPos.y);
@@ -232,7 +234,7 @@ export default class GameView extends cc.Component {
         this.clientAdapter.requestNewWorld(Date.now());
     }
 
-    public refreshData(info: IPayLoadJson, deltaTime: number): void {
+    public refreshData(info: PayLoadJson, deltaTime: number): void {
         this.setLeftTop(info.leftTop, info.mapString);
         this.players = info.players;
         this.onWorldChange(deltaTime);
@@ -246,7 +248,6 @@ export default class GameView extends cc.Component {
                 this.nextDuration -= this.timeEpsilon;
             }
         }
-        // console.log(this.nextDuration); // todo fixme
         this.timeLeft = this.nextDuration / 1000;
     }
 
@@ -325,7 +326,7 @@ export default class GameView extends cc.Component {
         }
         const ratio: number = dt / this.timeLeft;
         for (let i: number = 0; i < this.players.length; i++) {
-            const info: IPlayerInfo = this.players[i];
+            const info: PlayerInfo = this.players[i];
             if (info.state === 0) {
                 const playerNode: cc.Node = this.headRoot.children[i];
                 const targetPos: cc.Vec2 = this.getRowColPosition(info.headPos.x, info.headPos.y);

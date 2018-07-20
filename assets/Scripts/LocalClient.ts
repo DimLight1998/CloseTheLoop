@@ -1,7 +1,7 @@
 import { IClientAdapter } from './IAdapter';
 import LocalGameController from './LocalGameController';
 import GameView from './GameView';
-import { IPayLoadJson } from './IPlayerInfo';
+import { PayLoadJson } from './PlayerInfo';
 
 /**
  * This class is an implementation of the ClientAdapter for local game.
@@ -16,7 +16,7 @@ export class LocalClient implements IClientAdapter {
     arriveQueue: number[] = [];
     ctrl: LocalGameController = null;
     view: GameView = null;
-    newWorldCallBack: (info: IPayLoadJson, deltaTime: number) => void;
+    newWorldCallBack: (info: PayLoadJson, deltaTime: number) => void;
 
     constructor(ctrl: LocalGameController, view: GameView) {
         this.ctrl = ctrl;
@@ -60,7 +60,7 @@ export class LocalClient implements IClientAdapter {
     }
 
     registerViewPort(playerID2Track: number, roomID: number, nRows: number, nCols: number,
-        callback: (info: IPayLoadJson, deltaTime: number) => void): void {
+        callback: (info: PayLoadJson, deltaTime: number) => void): void {
         this.newWorldCallBack = callback;
         this.ctrl.roomManger.onlyServer.addNewWorldListener(this, playerID2Track, nRows, nCols);
     }

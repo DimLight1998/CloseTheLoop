@@ -1,10 +1,10 @@
-import { IServerPlayerInfo } from './IServerPlayerInfo';
+import { ServerPlayerInfo } from './ServerPlayerInfo';
 import { GameAI } from './GameAI';
-import { IPoint, IPayLoadJson, IPlayerInfo } from './IPlayerInfo';
+import { MyPoint, PayLoadJson, PlayerInfo } from './PlayerInfo';
 import { IServerAdapter } from './IAdapter';
 
 export class GameRoom {
-    static directions: IPoint[] = [
+    static directions: MyPoint[] = [
         { x: -1, y: 0 }, // up
         { x: 0, y: 1 }, // right
         { x: 1, y: 0 }, // down
@@ -17,9 +17,9 @@ export class GameRoom {
     nCols: number;
     colorMap: number[][];
     trackMap: number[][];
-    serverPlayerInfos: IServerPlayerInfo[];
+    serverPlayerInfos: ServerPlayerInfo[];
     playerNum: number;// do not exceed 14
-    timer: number;
+    timer: any;
     lastUpdateTime: number;
     serverAdapter: IServerAdapter = null;
     playersToClear: [number, boolean][] = [];
@@ -58,7 +58,7 @@ export class GameRoom {
         return true;
     }
 
-    static isAlive(info: IPlayerInfo): boolean {
+    static isAlive(info: PlayerInfo): boolean {
         return info.state === 0 || info.state === 3;
     }
 
@@ -78,7 +78,7 @@ export class GameRoom {
      * change the player's direction, prevent turning back.
      */
     changeDirection(playerID: number, direction: number): void { // validate the direction
-        const player: IServerPlayerInfo = this.serverPlayerInfos[playerID - 1];
+        const player: ServerPlayerInfo = this.serverPlayerInfos[playerID - 1];
         if ((player.headDirection + 2) % 4 === direction) {
             // invalid direction
         } else {
@@ -86,11 +86,24 @@ export class GameRoom {
         }
     }
 
+    changeDirectionRelative(playerID: number, nextDirection: string): void {
+        let currentDirection: number = this.getPlayerInfoById(playerID).headDirection;
+        if (nextDirection === 'left') {
+            this.changeDirection(playerID, (currentDirection + 3) % 4);
+        } else if (nextDirection === 'right') {
+            this.changeDirection(playerID, (currentDirection + 1) % 4);
+        }
+    }
+
+    getPlayerInfoById(playerID: number): ServerPlayerInfo {
+        return this.serverPlayerInfos[playerID - 1];
+    }
+
     /**
      * try to generate a 3x3 block for a player to spawn on, return the center of the block.
      * sometimes finding such area is hard (maybe impossible), return null in this case.
      */
-    randomSpawnNewPlayer(playerID: number): IPoint {
+    randomSpawnNewPlayer(playerID: number): MyPoint {
         const maxTryNum: number = 100;
         for (let i: number = 0; i < maxTryNum; i++) {
             const r: number = GameRoom.randInt(0, this.nRows - 1);
@@ -121,7 +134,7 @@ export class GameRoom {
         this.serverPlayerInfos = [];
         this.rebornList = [];
         for (let i: number = 0; i < this.playerNum; i++) {
-            const info: IServerPlayerInfo = {
+            const info: ServerPlayerInfo = {
                 playerID: i + 1, // 0 reserverd for space
                 isAI: true,
                 aiInstance: new GameAI(this, i + 1),
@@ -171,9 +184,9 @@ export class GameRoom {
                         let a: number = player.headDirection;
                         let b: number = player.nextDirection;
                         let res: number;
-                        if ((a + 1) % 4 !== b) {// anti clock wise
+                        if ((a + 1) % 4 !== b) { // anti clock wise
                             res = (a + 1) % 4;
-                        } else {// clock wise
+                        } else { // clock wise
                             res = a;
                         }
                         player.tracks.push([player.headPos.x, player.headPos.y, res]);
@@ -181,7 +194,7 @@ export class GameRoom {
                 }
 
                 player.headDirection = player.nextDirection;
-                const vector: IPoint = GameRoom.directions[player.headDirection];
+                const vector: MyPoint = GameRoom.directions[player.headDirection];
 
                 let nextPositionX: number = player.headPos.x + vector.x;
                 let nextPositionY: number = player.headPos.y + vector.y;
@@ -202,7 +215,7 @@ export class GameRoom {
             if (GameRoom.isAlive(player) && !this.atBorder(player.headPos.x, player.headPos.y)) {
                 let currentTrackId: number = this.trackMap[player.headPos.x][player.headPos.y];
                 if (currentTrackId !== 0) {
-                    const otherPlayer: IServerPlayerInfo = this.serverPlayerInfos[currentTrackId - 1];
+                    const otherPlayer: ServerPlayerInfo = this.serverPlayerInfos[currentTrackId - 1];
                     if (GameRoom.isAlive(otherPlayer)
                         && !this.atBorder(otherPlayer.headPos.x, otherPlayer.headPos.y)) {// will be killed by wall
                         if (this.colorMap[otherPlayer.headPos.x][otherPlayer.headPos.y] !== otherPlayer.playerID) {
@@ -238,66 +251,52 @@ export class GameRoom {
         }
     }
 
+    async floodFill(r: number, c: number, playerId: number): Promise<void> {
+        // start flood fill
+        let adjToWall: boolean = false;
+        let queue: [number, number][] = [];
+        let storage: [number, number][] = [];
+
+        queue.push([r, c]);
+        storage.push([r, c]);
+        this.mapStatus[r][c] = this.maxT;
+
+        while (queue.length > 0) {
+            let [x, y]: [number, number] = queue.pop();// convert queue to stack, performance enhance
+
+            for (let dir of GameRoom.directions) {
+                let [nx, ny]: [number, number] = [x + dir.x, y + dir.y];
+                if (this.atBorder(nx, ny)) {
+                    adjToWall = true;
+                } else {
+                    if (this.colorMap[nx][ny] !== playerId
+                        && this.trackMap[nx][ny] !== playerId
+                        && this.mapStatus[nx][ny] !== this.maxT) {
+                        this.mapStatus[nx][ny] = this.maxT;
+                        queue.push([nx, ny]);
+                        storage.push([nx, ny]);
+                    }
+                }
+            }
+        }
+
+        if (!adjToWall) {
+            // console.log(storage);
+
+            // this block is not adjacent to a wall, so it should be colored
+            for (const [x, y] of storage) {
+                this.colorMap[x][y] = playerId;
+            }
+        }
+    }
+
     async fillPlayer(playerId: number): Promise<void> {
         this.maxT++;
         // flood fill
         for (let r: number = 0; r < this.nRows; r++) {
             for (let c: number = 0; c < this.nCols; c++) {
                 if (this.mapStatus[r][c] !== this.maxT && this.colorMap[r][c] !== playerId && this.trackMap[r][c] !== playerId) {
-
-                    // console.log(r, c, this.maxT);
-                    // const map: number[][] = [];
-                    // for (let i: number = 0; i < this.nRows; i++) {
-                    //     const line: number[] = [];
-                    //     for (let j: number = 0; j < this.nCols; j++) {
-                    //         if (this.colorMap[i][j] === playerId
-                    //             || this.trackMap[i][j] === playerId
-                    //             || this.mapStatus[i][j] === this.maxT) {
-                    //             line.push(1);
-                    //         } else {
-                    //             line.push(0);
-                    //         }
-                    //     }
-                    //     map.push(line);
-                    // }
-                    // console.log(map);
-
-                    // start flood fill
-                    let adjToWall: boolean = false;
-                    let queue: [number, number][] = [];
-                    let storage: [number, number][] = [];
-
-                    queue.push([r, c]);
-                    storage.push([r, c]);
-                    this.mapStatus[r][c] = this.maxT;
-
-                    while (queue.length > 0) {
-                        let [x, y]: [number, number] = queue.pop();// convert queue to stack, performance enhance
-
-                        for (let dir of GameRoom.directions) {
-                            let [nx, ny]: [number, number] = [x + dir.x, y + dir.y];
-                            if (this.atBorder(nx, ny)) {
-                                adjToWall = true;
-                            } else {
-                                if (this.colorMap[nx][ny] !== playerId
-                                    && this.trackMap[nx][ny] !== playerId
-                                    && this.mapStatus[nx][ny] !== this.maxT) {
-                                    this.mapStatus[nx][ny] = this.maxT;
-                                    queue.push([nx, ny]);
-                                    storage.push([nx, ny]);
-                                }
-                            }
-                        }
-                    }
-
-                    if (!adjToWall) {
-                        // console.log(storage);
-
-                        // this block is not adjacent to a wall, so it should be colored
-                        for (const [x, y] of storage) {
-                            this.colorMap[x][y] = playerId;
-                        }
-                    }
+                    await this.floodFill(r, c, playerId);
                 }
             }
         }
@@ -332,7 +331,7 @@ export class GameRoom {
 
     updatePlayerReborn(): void {
         for (let playerID of this.rebornList) {
-            const info: IServerPlayerInfo = this.serverPlayerInfos[playerID - 1];
+            const info: ServerPlayerInfo = this.serverPlayerInfos[playerID - 1];
             info.headPos = this.randomSpawnNewPlayer(playerID);
             if (info.headPos !== null) {
                 info.state = 3;
@@ -385,15 +384,15 @@ export class GameRoom {
             return null;
         }
         const index: number = validIndexes[GameRoom.randInt(0, validIndexes.length - 1)];
-        const obj: IServerPlayerInfo = this.serverPlayerInfos[index];
+        const obj: ServerPlayerInfo = this.serverPlayerInfos[index];
         obj.isAI = false;
         obj.aiInstance = null;
-        // todo respawn obj
+        this.addToClearList(obj.playerID, true); // wait for respawn
         return obj.playerID;
     }
 
     replacePlayerWithAI(playerID: number): void {
-        const obj: IServerPlayerInfo = this.serverPlayerInfos[playerID - 1];
+        const obj: ServerPlayerInfo = this.serverPlayerInfos[playerID - 1];
         obj.isAI = true;
         obj.aiInstance = new GameAI(this, playerID);
     }
@@ -428,10 +427,10 @@ export class GameRoom {
      * @param playerID2Track the player to which the current status is specialized. (not the whole status is dumped
      * for transmission issue)
      */
-    getListenerView(playerID2Track: number, viewNRows: number, viewNCols: number): IPayLoadJson {
-        let leftTop: IPoint = null;
+    getListenerView(playerID2Track: number, viewNRows: number, viewNCols: number): PayLoadJson {
+        let leftTop: MyPoint = null;
         let mapString: string = '';
-        const playerInfos: IPlayerInfo[] = [];
+        const playerInfos: PlayerInfo[] = [];
         const func: (r: number, c: number) => boolean = (r: number, c: number): boolean => {
             let color: number = 0;
             let track: number = 0;
@@ -492,9 +491,9 @@ export class GameRoom {
             }
         }
         for (let p of this.playersToClear) {
-            const player: IServerPlayerInfo = this.serverPlayerInfos[p[0] - 1];
+            const player: ServerPlayerInfo = this.serverPlayerInfos[p[0] - 1];
             player.tracks = [];
-            if (p[1]) {// @refactor
+            if (p[1]) { // @refactor
                 player.state = 1;
             }
         }
