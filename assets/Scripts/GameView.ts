@@ -35,11 +35,18 @@ export default class GameView extends cc.Component {
         return [tmp.r, tmp.g, tmp.b];
     }
 
+    static ccColorToRGBTuple(color: cc.Color): [number, number, number] {
+        return [color.getR(), color.getG(), color.getB()];
+    }
+
     @property(cc.Node)
     cameraNode: cc.Node = null;
 
     @property(cc.Node)
     haloNode: cc.Node = null;
+
+    @property(cc.Node)
+    leaderBoardRoot: cc.Node = null;
 
     @property
     nRows: number = 20;
@@ -55,6 +62,9 @@ export default class GameView extends cc.Component {
 
     @property(cc.Prefab)
     particlePrefab: cc.Prefab = null;
+
+    @property(cc.Prefab)
+    leaderBoardPrefab: cc.Prefab = null;
 
     @property(cc.SpriteFrame)
     squareFrame: cc.SpriteFrame = null;
@@ -80,6 +90,12 @@ export default class GameView extends cc.Component {
     @property
     angleOpacity: number = 180;
 
+    @property
+    leaderBoardTopN: number = 5;
+
+    viewWidth: number;
+    viewHeight: number;
+
     colorRoot: cc.Node;
     trackRoot: cc.Node;
     headRoot: cc.Node;
@@ -92,6 +108,7 @@ export default class GameView extends cc.Component {
     players: IPlayerInfo[] = [];
 
     oldColorMap: number[][] = null;
+    leaderBoard: [number, number][] = [];
 
     myPlayerID: number;
     myRoomID: number;
@@ -196,6 +213,10 @@ export default class GameView extends cc.Component {
         for (let i: number = 0; i < this.players.length; i++) {
             const info: IPlayerInfo = this.players[i];
 
+            if (info.playerID === this.myPlayerID) {
+                this.haloNode.color = this.lightColorList[this.myPlayerID];
+            }
+
             if (info.state === 3) {
                 const pos: cc.Vec2 = this.getRowColPosition(info.headPos.x, info.headPos.y);
                 this.headRoot.children[i].position = pos;
@@ -208,7 +229,6 @@ export default class GameView extends cc.Component {
             } else if (info.state === 1) {
                 if (info.playerID === this.myPlayerID) {
                     this.cameraNode.getComponent(CameraController).setFollower(null);
-                    this.haloNode.color = this.lightColorList[this.myPlayerID];
                 }
 
                 this.headRoot.children[i].position = cc.v2(1e9, 1e9);
@@ -239,6 +259,7 @@ export default class GameView extends cc.Component {
     public refreshData(info: IPayLoadJson, deltaTime: number): void {
         this.setLeftTop(info.leftTop, info.mapString);
         this.players = info.players;
+        this.leaderBoard = info.leaderBoard;
         this.onWorldChange(deltaTime);
     }
 
@@ -292,11 +313,32 @@ export default class GameView extends cc.Component {
         }
     }
 
+    updateLeaderBoard(): void {
+        let baseCount: number = this.leaderBoard[0][1];
+        console.log(this.leaderBoard);
+        for (let i: number = 0; i < this.leaderBoardTopN; i++) {
+            let [leaderBoardPlayerId, leaderBoardPlayerCount]: [number, number] = this.leaderBoard[i];
+            let duration: number = this.nextDuration / 1000 * 2;
+
+            // update leader board color
+            let playerColor: cc.Color = this.lightColorList[leaderBoardPlayerId];
+
+            // update leader board width
+            let scaleRatio: number = leaderBoardPlayerCount / baseCount;
+
+            this.leaderBoardRoot.children[i].runAction(cc.spawn(
+                cc.tintTo(duration, playerColor.getR(), playerColor.getG(), playerColor.getB()),
+                cc.scaleTo(duration, scaleRatio, 1).easing(cc.easeOut(1))
+            ));
+        }
+    }
+
     onWorldChange(deltaTime: number): void {
         // let cur: number = Date.now();
         this.adjustDuration(deltaTime);
         this.updateTiles();
         this.updateHeads();
+        this.updateLeaderBoard();
         // console.log('world change costs ' + (Date.now() - cur) + 'ms');
     }
 
@@ -305,6 +347,9 @@ export default class GameView extends cc.Component {
      * only tiles in the view will be rendered.
      */
     onLoad(): void {
+        this.viewWidth = this.node.parent.width;
+        this.viewHeight = this.node.parent.height;
+
         for (let c of GameView.colorList) {
             this.lightColorList.push(cc.color(...GameView.toRGBTuple(c)));
             this.darkColorList.push(cc.color(...GameView.toRGBTuple(c.clone().darken(20))));
@@ -317,6 +362,20 @@ export default class GameView extends cc.Component {
             this.colorRoot.addChild(cc.instantiate(this.spritePrefab));
             this.trackRoot.addChild(cc.instantiate(this.spritePrefab));
         }
+
+        for (let i: number = 0; i < this.leaderBoardTopN; i++) {
+            this.leaderBoardRoot.addChild(cc.instantiate(this.leaderBoardPrefab));
+        }
+        for (let i: number = 0; i < this.leaderBoardTopN; i++) {
+            this.leaderBoardRoot.children[i].setPositionX(
+                this.viewWidth);
+            this.leaderBoardRoot.children[i].setPositionY(
+                this.viewHeight - i * this.leaderBoardRoot.children[i].height);
+        }
+
+        // scale halo
+        this.haloNode.width = this.viewWidth;
+        this.haloNode.height = this.viewHeight;
     }
 
     /**

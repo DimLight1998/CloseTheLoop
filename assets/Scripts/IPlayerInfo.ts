@@ -23,4 +23,5 @@ export interface IPayLoadJson {
     mapString: string;
     players: IPlayerInfo[];
     leftTop: IPoint;
+    leaderBoard: [number, number][];
 }

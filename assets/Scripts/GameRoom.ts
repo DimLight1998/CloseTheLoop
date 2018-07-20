@@ -25,6 +25,7 @@ export class GameRoom {
     playersToClear: [number, boolean][] = [];
     potentialFillList: number[] = [];
     rebornList: number[] = [];
+    leaderBoard: [number, number][] = [];
 
     mapStatus: number[][] = null;
     maxT: number;
@@ -341,6 +342,21 @@ export class GameRoom {
         this.rebornList = [];
     }
 
+    updateLeaderBoard(): void {
+        let count: number[] = Array.from({ length: this.playerNum + 1 }, () => 0);
+        for (let r: number = 0; r < this.nRows; r++) {
+            for (let c: number = 0; c < this.nCols; c++) {
+                count[this.colorMap[r][c]]++;
+            }
+        }
+
+        this.leaderBoard = [];
+        for (let i: number = 1; i < count.length; i++) {
+            this.leaderBoard.push([i, count[i]]);
+        }
+        this.leaderBoard.sort(([, score1], [, score2]) => score2 - score1);
+    }
+
     /**
      * update all players' position logically. if it has a server adapter, dispatch the world to other clients.
      */
@@ -356,6 +372,7 @@ export class GameRoom {
         await this.updateColorFilling();
         await this.clearPlayers();
         this.updateDeadPlayer();
+        this.updateLeaderBoard();
         if (this.serverAdapter !== null) {
             this.serverAdapter.dispatchNewWorld();
         }
@@ -470,7 +487,8 @@ export class GameRoom {
         return {
             mapString,
             players: playerInfos,
-            leftTop
+            leftTop,
+            leaderBoard: this.leaderBoard
         };
     }
 
