@@ -38,6 +38,9 @@ export default class GameView extends cc.Component {
     @property(cc.Node)
     cameraNode: cc.Node = null;
 
+    @property(cc.Node)
+    haloNode: cc.Node = null;
+
     @property
     nRows: number = 20;
 
@@ -205,6 +208,7 @@ export default class GameView extends cc.Component {
             } else if (info.state === 1) {
                 if (info.playerID === this.myPlayerID) {
                     this.cameraNode.getComponent(CameraController).setFollower(null);
+                    this.haloNode.color = this.lightColorList[this.myPlayerID];
                 }
 
                 this.headRoot.children[i].position = cc.v2(1e9, 1e9);
