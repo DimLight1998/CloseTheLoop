@@ -29,6 +29,7 @@ export class GameRoom {
     rebornList: number[] = [];
     leaderBoard: [number, number][] = [];
     soundFxs: number[] = [];
+    newPlayers: number[] = [];
 
     mapStatus: number[][] = null;
     maxT: number;
@@ -473,7 +474,7 @@ export class GameRoom {
         const index: number = validIndexes[GameRoom.randInt(0, validIndexes.length - 1)];
         const obj: ServerPlayerInfo = this.serverPlayerInfos[index];
         obj.isAI = false;
-        this.addToClearList(obj.playerID, true); // wait for respawn
+        this.newPlayers.push(obj.playerID);
         return obj.playerID;
     }
 
@@ -566,6 +567,9 @@ export class GameRoom {
      * Clear player's track map and/or color map.
      */
     clearPlayers(): void {
+        for (let id of this.newPlayers) {
+            this.addToClearList(id, true);
+        }
         for (let i: number = 0; i < this.nRows; i++) {
             for (let j: number = 0; j < this.nCols; j++) {
                 for (let p of this.playersToClear) {
@@ -585,6 +589,12 @@ export class GameRoom {
             if (p[1] === true) { // @refactor
                 player.state = 1;
                 this.soundFxs[player.playerID] = Math.max(this.soundFxs[player.playerID], 3);
+            }
+        }
+        while (this.newPlayers.length > 0) {
+            let id: number = this.newPlayers.pop();
+            if (this.serverPlayerInfos[id - 1].state === 1) {
+                this.serverPlayerInfos[id - 1].state = 2;
             }
         }
     }

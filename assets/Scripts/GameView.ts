@@ -41,6 +41,9 @@ export default class GameView extends cc.Component {
     }
 
     @property(cc.Node)
+    foregroundNode: cc.Node = null;
+
+    @property(cc.Node)
     cameraNode: cc.Node = null;
 
     @property(cc.Node)
@@ -240,6 +243,7 @@ export default class GameView extends cc.Component {
 
 
     updateHeads(): void {
+
         if (this.firstFlag) {
             this.updateHeadsFirstTime();
         }
@@ -258,6 +262,10 @@ export default class GameView extends cc.Component {
                 this.headRoot.children[i].color = this.darkColorList[info.playerID];
 
                 if (info.playerID === this.myPlayerID) {
+                    if (this.foregroundNode !== null) {
+                        this.foregroundNode.destroy();
+                        this.foregroundNode = null;
+                    }
                     this.cameraNode.getComponent(CameraController).setFollower(this.headRoot.children[i]);
                 }
             } else if (info.state === 1) {
@@ -437,6 +445,8 @@ export default class GameView extends cc.Component {
         }
 
         // replace scale halo by using widget
+
+        this.foregroundNode.getChildByName('LoadLabel').color = this.haloNode.color = this.lightColorList[GameRoom.randInt(1, 14)];
 
         // play bgm
         cc.audioEngine.play(this.backgroundMusic, true, 1);
