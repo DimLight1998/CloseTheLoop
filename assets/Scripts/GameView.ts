@@ -137,6 +137,8 @@ export default class GameView extends cc.Component {
 
     timeLeft: number;
 
+    firstFlag: boolean = true;
+
     public setClientAdapter(adapter: IClientAdapter): void {
         this.clientAdapter = adapter;
     }
@@ -222,13 +224,24 @@ export default class GameView extends cc.Component {
         return cc.v2(spriteWidth * col, -spriteHeight * row);
     }
 
-
-    updateHeads(): void {
+    updateHeadsFirstTime(): void {
         while (this.headRoot.childrenCount > this.players.length) {
             this.headRoot.children[this.headRoot.childrenCount - 1].destroy();
         }
         while (this.headRoot.childrenCount < this.players.length) {
             this.headRoot.addChild(cc.instantiate(this.playerPrefab));
+        }
+        for (let i: number = 0; i < this.headRoot.childrenCount; i++) {
+            this.headRoot.children[i].color = this.darkColorList[this.players[i].playerID];
+            const pos: cc.Vec2 = this.getRowColPosition(this.players[i].headPos.x, this.players[i].headPos.y);
+            this.headRoot.children[i].position = pos;
+        }
+    }
+
+
+    updateHeads(): void {
+        if (this.firstFlag) {
+            this.updateHeadsFirstTime();
         }
 
         for (let i: number = 0; i < this.players.length; i++) {
@@ -364,6 +377,9 @@ export default class GameView extends cc.Component {
         this.updateHeads();
         this.updateLeaderBoard();
         this.playSound();
+        if (this.firstFlag) {
+            this.firstFlag = false;
+        }
         // console.log('world change costs ' + (Date.now() - cur) + 'ms');
     }
 
@@ -389,6 +405,9 @@ export default class GameView extends cc.Component {
      * only tiles in the view will be rendered.
      */
     onLoad(): void {
+
+        this.firstFlag = true;
+
         this.viewWidth = cc.view.getVisibleSizeInPixel().width;
         this.viewHeight = cc.view.getVisibleSizeInPixel().height;
         this.nCols = Math.ceil((this.nRows - 3) * this.viewWidth / this.viewHeight) + 3;
