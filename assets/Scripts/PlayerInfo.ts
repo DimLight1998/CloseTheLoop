@@ -23,4 +23,5 @@ export class PayLoadJson {
     mapString: string;
     players: PlayerInfo[];
     leftTop: MyPoint;
+    leaderBoard: [number, number][];
 }
