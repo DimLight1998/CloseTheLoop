@@ -26,6 +26,7 @@ export class GameRoom {
     potentialFillList: number[] = [];
     rebornList: number[] = [];
     leaderBoard: [number, number][] = [];
+    soundFxs: number[] = [];
 
     mapStatus: number[][] = null;
     maxT: number;
@@ -45,6 +46,7 @@ export class GameRoom {
         GameAI.dist = GameRoom.create3DArray(nRows, nCols, 4);
 
         this.maxT = 0;
+        this.soundFxs = Array(this.playerNum + 1).fill(0);
     }
 
     static create2DArray(nRows: number, nCols: number): number[][] {
@@ -235,6 +237,9 @@ export class GameRoom {
                         && !this.atBorder(otherPlayer.headPos.x, otherPlayer.headPos.y)) {// will be killed by wall
                         if (this.colorMap[otherPlayer.headPos.x][otherPlayer.headPos.y] !== otherPlayer.playerID) {
                             this.addToClearList(otherPlayer.playerID, true);
+
+                            // update sound
+                            this.soundFxs[player.playerID] = Math.max(this.soundFxs[player.playerID], 2);
                         } else {
                             this.addToClearList(otherPlayer.playerID, false);
                         }
@@ -266,7 +271,7 @@ export class GameRoom {
         }
     }
 
-    async floodFill(r: number, c: number, playerId: number): Promise<void> {
+    async floodFill(r: number, c: number, playerId: number): Promise<boolean> {
         // start flood fill
         let adjToWall: boolean = false;
         let queue: [number, number][] = [];
@@ -302,18 +307,21 @@ export class GameRoom {
             for (const [x, y] of storage) {
                 this.colorMap[x][y] = playerId;
             }
+            return true;
         }
+        return false;
     }
 
-    async fillPlayer(playerId: number): Promise<void> {
+    async fillPlayer(playerId: number): Promise<boolean> {
         // let cur: number = Date.now();
+        let success: boolean = false;
 
         this.maxT++;
         // flood fill
         for (let r: number = 0; r < this.nRows; r++) {
             for (let c: number = 0; c < this.nCols; c++) {
                 if (this.mapStatus[r][c] !== this.maxT && this.colorMap[r][c] !== playerId && this.trackMap[r][c] !== playerId) {
-                    await this.floodFill(r, c, playerId);
+                    success = (await this.floodFill(r, c, playerId)) || success;
                 }
             }
         }
@@ -323,11 +331,13 @@ export class GameRoom {
                 if (this.trackMap[r][c] === playerId) {
                     this.colorMap[r][c] = playerId;
                     this.trackMap[r][c] = 0;
+                    success = true;
                 }
             }
         }
 
         this.serverPlayerInfos[playerId - 1].tracks = [];
+        return success;
 
         // console.log('bfs costs ' + (Date.now() - cur) + 'ms');
     }
@@ -344,7 +354,10 @@ export class GameRoom {
 
         // for elements still in the potential list, fill for them
         for (let playerId of this.potentialFillList) {
-            await this.fillPlayer(playerId);
+            let success: boolean = await this.fillPlayer(playerId);
+            if (success) {
+                this.soundFxs[playerId] = Math.max(1, this.soundFxs[playerId]);
+            }
         }
     }
 
@@ -382,6 +395,12 @@ export class GameRoom {
         }
     }
 
+    initSounds(): void {
+        for (let i: number = 0; i <= this.playerNum; i++) {
+            this.soundFxs[i] = 0;
+        }
+    }
+
     /**
      * update all players' position logically. if it has a server adapter, dispatch the world to other clients.
      */
@@ -389,6 +408,7 @@ export class GameRoom {
         this.lastUpdateTime = Date.now();
         this.playersToClear = [];
         this.potentialFillList = [];
+        this.initSounds();
         this.updateDyingPlayers();
         this.updatePlayerPos();
         this.updatePlayerReborn();
@@ -513,7 +533,8 @@ export class GameRoom {
             mapString,
             players: playerInfos,
             leftTop,
-            leaderBoard: this.leaderBoard
+            leaderBoard: this.leaderBoard,
+            soundFx: this.soundFxs[playerID2Track]
         };
     }
 
@@ -537,8 +558,9 @@ export class GameRoom {
         for (let p of this.playersToClear) {
             const player: ServerPlayerInfo = this.serverPlayerInfos[p[0] - 1];
             player.tracks = [];
-            if (p[1]) { // @refactor
+            if (p[1] === true) { // @refactor
                 player.state = 1;
+                this.soundFxs[player.playerID] = Math.max(this.soundFxs[player.playerID], 3);
             }
         }
     }

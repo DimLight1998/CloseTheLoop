@@ -93,6 +93,15 @@ export default class GameView extends cc.Component {
     @property
     leaderBoardTopN: number = 5;
 
+    @property(cc.AudioClip)
+    soundCloseLoop: cc.AudioClip = null;
+
+    @property(cc.AudioClip)
+    soundKill: cc.AudioClip = null;
+
+    @property(cc.AudioClip)
+    soundKilled: cc.AudioClip = null;
+
     viewWidth: number;
     viewHeight: number;
 
@@ -115,6 +124,9 @@ export default class GameView extends cc.Component {
     leftTop: MyPoint;
 
     clientAdapter: IClientAdapter;
+
+    // which sound to play this round
+    roundSoundFx: number;
 
     timeLeft: number;
 
@@ -262,6 +274,7 @@ export default class GameView extends cc.Component {
         this.setLeftTop(info.leftTop, info.mapString);
         this.players = info.players;
         this.leaderBoard = info.leaderBoard;
+        this.roundSoundFx = info.soundFx;
         this.onWorldChange(deltaTime);
     }
 
@@ -340,8 +353,26 @@ export default class GameView extends cc.Component {
         this.updateTiles();
         this.updateHeads();
         this.updateLeaderBoard();
+        this.playSound();
         // console.log('world change costs ' + (Date.now() - cur) + 'ms');
     }
+
+    playSound(): void {
+        switch (this.roundSoundFx) {
+            case 0:
+                break;
+            case 1:
+                cc.audioEngine.play(this.soundCloseLoop, false, 1);
+                break;
+            case 2:
+                cc.audioEngine.play(this.soundKill, false, 1);
+                break;
+            case 3:
+                cc.audioEngine.play(this.soundKilled, false, 1);
+                break;
+        }
+    }
+
 
     /**
      * add colors and tracks sprites for later manipulation.
