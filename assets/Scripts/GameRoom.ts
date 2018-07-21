@@ -37,11 +37,22 @@ export class GameRoom {
         this.colorMap = GameRoom.create2DArray(nRows, nCols);
         this.trackMap = GameRoom.create2DArray(nRows, nCols);
         this.mapStatus = GameRoom.create2DArray(nRows, nCols);
+
+        GameAI.vis = GameRoom.create3DArray(nRows, nCols, 4);
+        GameAI.max_t = 0;
+        GameAI.prevPos = GameRoom.create3DArray(nRows, nCols, 4);
+        GameAI.prevDir = GameRoom.create3DArray(nRows, nCols, 4);
+        GameAI.dist = GameRoom.create3DArray(nRows, nCols, 4);
+
         this.maxT = 0;
     }
 
     static create2DArray(nRows: number, nCols: number): number[][] {
         return Array(nRows).fill(0).map(() => Array(nCols).fill(0));
+    }
+
+    static create3DArray(nRows: number, nCols: number, nDims: number): number[][][] {
+        return Array(nRows).fill(0).map(() => Array(nCols).fill(0).map(() => Array(nDims).fill(0)));
     }
 
     static randInt(l: number, r: number): number {

@@ -9,6 +9,11 @@ enum State {
 }
 
 export class GameAI {
+    static vis: number[][][] = null;
+    static prevPos: number[][][] = null;
+    static prevDir: number[][][] = null;
+    static dist: number[][][] = null;
+    static max_t: number = 0;
     // 供ai操作的游戏对象
     game: GameRoom;
     playerID: number;
@@ -23,6 +28,7 @@ export class GameAI {
     planRate: number = 0.35;
     emptyLandProceedRate: number = 0.9;
     enemyLandProceedRate: number = 0.7;
+    maxDistance: number = 10;
 
     constructor(game: GameRoom, playerID: number) {
         this.game = game;
@@ -50,6 +56,8 @@ export class GameAI {
     }
 
     updateAI(): void {
+        this.bfs(this.playerInfo.headPos.x, this.playerInfo.headPos.y,
+            this.playerInfo.headDirection, this.maxDistance);
         this.updateState();
         this.executePlan();
     }
@@ -147,6 +155,40 @@ export class GameAI {
     }
 
     // 执行层
+
+    bfs(sR: number, sC: number, sD: number, maxDistance: number): void {
+        GameAI.max_t++;
+        const queue: [number, number, number][] = [];
+        queue.push([sR, sC, sD]);
+        GameAI.prevPos[sR][sC][sD] = -1;
+        GameAI.prevDir[sR][sC][sD] = -1;
+        GameAI.vis[sR][sC][sD] = GameAI.max_t;
+        GameAI.dist[sR][sC][sD] = 0;
+
+        while (queue.length > 0) {
+            let [r, c, d] = queue.shift();
+            if (GameAI.dist[r][c][d] < maxDistance) {
+                for (let curD: number = 0; curD < 4; curD++) {
+                    const dir: MyPoint = GameRoom.directions[curD];
+                    let [nr, nc] = [r + dir.x, c + dir.y];
+                    if (!this.game.atBorder(nr, nc)) {
+                        for (let nd: number = 0; nd < 4; nd++) {
+                            if (nd === (d + 2) % 4) {
+                                continue;
+                            } else {
+                                if (GameAI.vis[nr][nc][nd] !== GameAI.max_t) {
+                                    GameAI.vis[nr][nc][nd] = GameAI.max_t;
+                                    GameAI.dist[nr][nc][nd] = GameAI.dist[r][c][d] + 1;
+                                    GameAI.prevPos[nr][nc][nd] = curD;
+                                    GameAI.prevDir[nr][nc][nd] = d;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     randomWalk(): boolean {
         const pos: MyPoint = this.playerInfo.headPos;
