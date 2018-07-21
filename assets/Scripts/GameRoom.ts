@@ -41,7 +41,6 @@ export class GameRoom {
 
         GameAI.vis = GameRoom.create3DArray(nRows, nCols, 4);
         GameAI.max_t = 0;
-        GameAI.prevPos = GameRoom.create3DArray(nRows, nCols, 4);
         GameAI.prevDir = GameRoom.create3DArray(nRows, nCols, 4);
         GameAI.dist = GameRoom.create3DArray(nRows, nCols, 4);
 
@@ -271,7 +270,7 @@ export class GameRoom {
         }
     }
 
-    async floodFill(r: number, c: number, playerId: number): Promise<boolean> {
+    floodFill(r: number, c: number, playerId: number): boolean {
         // start flood fill
         let adjToWall: boolean = false;
         let queue: [number, number][] = [];
@@ -387,10 +386,16 @@ export class GameRoom {
         }
         this.leaderBoard.sort(([, score1], [, score2]) => score2 - score1);
     }
+
     async updateAIs(): Promise<void> {
         for (const player of this.serverPlayerInfos) {
-            if (player.isAI && GameRoom.isAlive(player)) {
+            if (GameRoom.isAlive(player)) {
                 await player.aiInstance.updateAI();
+            }
+        }
+        for (const player of this.serverPlayerInfos) {
+            if (GameRoom.isAlive(player)) {
+                await player.aiInstance.lateUpdateAI();
             }
         }
     }
@@ -541,7 +546,7 @@ export class GameRoom {
     /**
      * Clear player's track map and/or color map.
      */
-    async clearPlayers(): Promise<void> {
+    clearPlayers(): void {
         for (let i: number = 0; i < this.nRows; i++) {
             for (let j: number = 0; j < this.nCols; j++) {
                 for (let p of this.playersToClear) {

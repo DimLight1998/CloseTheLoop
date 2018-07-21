@@ -262,7 +262,6 @@ export default class GameView extends cc.Component {
                     this.trackTiles[t[0]][t[1]].opacity = this.angleOpacity;
                 }
             }
-            // todo player die, animation, explosion
         }
     }
 
@@ -329,7 +328,6 @@ export default class GameView extends cc.Component {
 
     updateLeaderBoard(): void {
         let baseCount: number = this.leaderBoard[0][1];
-        console.log(this.leaderBoard);
         for (let i: number = 0; i < this.leaderBoardTopN; i++) {
             let [leaderBoardPlayerId, leaderBoardPlayerCount]: [number, number] = this.leaderBoard[i];
             let duration: number = this.nextDuration / 1000 * 2;

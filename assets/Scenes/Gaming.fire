@@ -51,7 +51,7 @@
     "_globalZOrder": 0,
     "_opacityModifyRGB": false,
     "groupIndex": 0,
-    "autoReleaseAssets": false
+    "autoReleaseAssets": true
   },
   {
     "__type__": "cc.Node",
@@ -476,8 +476,8 @@
     "leaderBoardRoot": {
       "__id__": 16
     },
-    "nRows": 21,
-    "nCols": 35,
+    "nRows": 40,
+    "nCols": 40,
     "spritePrefab": {
       "__uuid__": "7b3c8fd1-d3d2-4137-9e18-5eac56cbd066"
     },
@@ -596,7 +596,7 @@
         "__id__": 5
       }
     ],
-    "zoomRatio": 1
+    "zoomRatio": 0.3
   },
   {
     "__type__": "26b69SlggJGnb19XxgALTuA",
@@ -824,7 +824,7 @@
     "_enabled": true,
     "totalNRows": 80,
     "totalNCols": 80,
-    "totalNPlayers": 13,
+    "totalNPlayers": 14,
     "view": {
       "__id__": 10
     }
