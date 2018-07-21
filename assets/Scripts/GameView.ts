@@ -389,8 +389,9 @@ export default class GameView extends cc.Component {
      * only tiles in the view will be rendered.
      */
     onLoad(): void {
-        this.viewWidth = this.node.parent.width;
-        this.viewHeight = this.node.parent.height;
+        this.viewWidth = cc.view.getVisibleSizeInPixel().width;
+        this.viewHeight = cc.view.getVisibleSizeInPixel().height;
+        this.nCols = Math.ceil((this.nRows - 3) * this.viewWidth / this.viewHeight) + 3;
 
         for (let c of GameView.colorList) {
             this.lightColorList.push(cc.color(...GameView.toRGBTuple(c)));
