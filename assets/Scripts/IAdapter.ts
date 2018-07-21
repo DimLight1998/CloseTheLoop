@@ -1,3 +1,5 @@
+// todo keep this file sync with local until ddl.
+
 import { PayLoadJson } from './PlayerInfo';
 
 // 一个视图需要一个adapter

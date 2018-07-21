@@ -1,3 +1,5 @@
+// todo keep this file sync with local until ddl.
+
 import { ServerPlayerInfo } from './ServerPlayerInfo';
 import { GameAI } from './GameAI';
 import { MyPoint, PayLoadJson, PlayerInfo } from './PlayerInfo';
