@@ -50,8 +50,6 @@ export default class SplashSceneCtrl extends cc.Component {
         this.darkColor = cc.color(...SplashSceneCtrl.toRGBTuple(SplashSceneCtrl.colorList[i].clone().darken(20)));
 
         // put halo to right place
-        this.haloSprint.node.height = this.node.height;
-        this.haloSprint.node.width = this.node.width;
         this.haloSprint.node.color = this.lightColor;
 
         this.singlePlayerButton.node.color = this.darkColor;

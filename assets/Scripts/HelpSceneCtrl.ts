@@ -21,8 +21,6 @@ export default class NewClass extends cc.Component {
     bottom: cc.Sprite = null;
 
     onLoad(): void {
-        this.haloSprite.node.height = this.node.height;
-        this.haloSprite.node.width = this.node.width;
 
         this.button1.node.on(
             'click',

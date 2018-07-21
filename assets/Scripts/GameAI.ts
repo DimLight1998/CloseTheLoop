@@ -30,6 +30,8 @@ export class GameAI {
     maxDistance: number = 10;
     dangerThreshold: number = 0.5;
     fleeRate: number = 0.3;
+    attackRate: number = 0.5;
+    stillAttackRate: number = 0.1;
 
     homeLandPos: [number, number, number] = null;
     homeLandDist: number = null;
@@ -396,9 +398,9 @@ export class GameAI {
         const enemyId: number = this.game.trackMap[this.enemyPos[0]][this.enemyPos[1]];
         const enemyInfo: ServerPlayerInfo = this.game.serverPlayerInfos[enemyId - 1];
         if (enemyInfo.aiInstance.homeLandDist > this.enemyDist) {
-            return Math.random() < 0.5;
+            return Math.random() < this.attackRate;
         } else if (enemyInfo.aiInstance.homeLandDist > this.enemyDist / 2) {
-            return Math.random() < 0.1;
+            return Math.random() < this.stillAttackRate;
         }
         return false;
     }

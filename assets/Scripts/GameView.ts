@@ -412,13 +412,11 @@ export default class GameView extends cc.Component {
         for (let i: number = 0; i < this.leaderBoardTopN; i++) {
             this.leaderBoardBars.push(this.leaderBoardRoot.children[i].getChildByName('LeaderBoardBar'));
             this.leaderBoardDetails.push(this.leaderBoardRoot.children[i].getChildByName('Detail'));
-            this.leaderBoardRoot.children[i].setPositionX(this.viewWidth);
-            this.leaderBoardRoot.children[i].setPositionY(this.viewHeight - i * this.leaderBoardBars[i].height);
+            this.leaderBoardRoot.children[i].setPositionX(0);
+            this.leaderBoardRoot.children[i].setPositionY(- i * this.leaderBoardBars[i].height);
         }
 
-        // scale halo
-        this.haloNode.width = this.viewWidth;
-        this.haloNode.height = this.viewHeight;
+        // replace scale halo by using widget
 
         // play bgm
         cc.audioEngine.play(this.backgroundMusic, true, 1);
