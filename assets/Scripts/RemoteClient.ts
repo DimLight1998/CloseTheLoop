@@ -1,5 +1,5 @@
 import { IClientAdapter } from './IAdapter';
-import { IPayLoadJson } from './IPlayerInfo';
+import { PayLoadJson } from './PlayerInfo';
 import GameView from './GameView';
 
 export class RemoteClient implements IClientAdapter {
@@ -12,18 +12,27 @@ export class RemoteClient implements IClientAdapter {
     infoQueue: string[] = [];
     waitingQueue: number[] = [];
     arriveQueue: number[] = [];
-    onWorldRequestSuccess: (info: IPayLoadJson, deltaTime: number) => void;
+    onWorldRequestSuccess: (info: PayLoadJson, deltaTime: number) => void;
 
     onRegisterSuccess: (playerId: number, roomId: number) => void;
 
-    constructor(view: GameView) {
-        this.webSocket = new WebSocket('ws://192.144.178.46:12306');
+    constructor(view: GameView, hostname: string, port: number, openCallback: () => void, closeCallback: () => void) {
+        this.webSocket = new WebSocket(`ws://${hostname}:${port}`);
+        this.webSocket.onopen = openCallback;
+        this.webSocket.onerror = (event: Event) => {
+            console.log('error occured: ' + event);
+            this.webSocket.close();
+        };
+        this.webSocket.onclose = closeCallback;
+
         this.view = view;
-        this.webSocket.onmessage = this.handleIncomingMessage;
+        this.view.setClientAdapter(this);
+
+        this.webSocket.onmessage = this.handleIncomingMessage.bind(this);
     }
 
-    changeDirection(playerID: number, direction: number): void {
-        this.webSocket.send(`CHDIR@${this.myPlayerId}@${this.myRoomId}@${this.myClientSocketId}`);
+    changeDirection(playerID: number, direction: number): void {// @bug
+        this.webSocket.send(`CHDIR@${playerID}@${this.myRoomId}@${this.myClientSocketId}@${direction}`);
     }
 
     requestNewWorld(currentTime: number): void {
@@ -41,7 +50,7 @@ export class RemoteClient implements IClientAdapter {
 
     registerViewPort(playerID2Track: number, roomID: number,
         nRows: number, nCols: number,
-        callback: (info: IPayLoadJson, deltaTime: number) => void): void {
+        callback: (info: PayLoadJson, deltaTime: number) => void): void {
         this.onWorldRequestSuccess = callback;
         this.webSocket.send(`REG_VP@${playerID2Track}@${roomID}@${nRows}@${nCols}@${this.myClientSocketId}`);
     }
@@ -54,8 +63,17 @@ export class RemoteClient implements IClientAdapter {
             let content: string = messageObj.content;
             switch (type) {
                 case 'WORLD':
-                    this.infoQueue.push(JSON.parse(content));
-                    this.arriveQueue.push(Date.now());
+                    if (this.waitingQueue.length === 0) {
+                        if (this.infoQueue.length > 0) {
+                            console.log('Warning! Still have ' + this.infoQueue.length + ' round to consume!');
+                            this.infoQueue = [];
+                            this.arriveQueue = [];
+                        }
+                        this.infoQueue.push(content);
+                        this.arriveQueue.push(Date.now());
+                    } else {
+                        this.onWorldRequestSuccess(JSON.parse(content), Date.now() - this.waitingQueue.shift());
+                    }
                     break;
             }
         } else {
@@ -63,7 +81,7 @@ export class RemoteClient implements IClientAdapter {
             switch (sections[0]) {
                 case 'REG_OK':
                     [this.myPlayerId, this.myRoomId, this.myClientSocketId] =
-                        [sections[1], sections[2], sections[3]].map(parseInt);
+                        [sections[1], sections[2], sections[3]].map((x) => parseInt(x, 10));
                     this.onRegisterSuccess(this.myPlayerId, this.myRoomId);
                     break;
             }
