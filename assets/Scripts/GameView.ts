@@ -102,6 +102,9 @@ export default class GameView extends cc.Component {
     @property(cc.AudioClip)
     soundKilled: cc.AudioClip = null;
 
+    @property(cc.AudioClip)
+    backgroundMusic: cc.AudioClip = null;
+
     viewWidth: number;
     viewHeight: number;
 
@@ -408,6 +411,9 @@ export default class GameView extends cc.Component {
         // scale halo
         this.haloNode.width = this.viewWidth;
         this.haloNode.height = this.viewHeight;
+
+        // play bgm
+        cc.audioEngine.play(this.backgroundMusic, true, 1);
     }
 
     /**

@@ -523,6 +523,9 @@
     },
     "soundKilled": {
       "__uuid__": "40de2155-415b-4c44-a28c-acc2f018a0ec"
+    },
+    "backgroundMusic": {
+      "__uuid__": "a160c7b4-02cc-4cb6-810b-42c3be977cd2"
     }
   },
   {
