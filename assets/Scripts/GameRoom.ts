@@ -137,7 +137,7 @@ export class GameRoom {
             const info: ServerPlayerInfo = {
                 playerID: i + 1, // 0 reserverd for space
                 isAI: true,
-                aiInstance: new GameAI(this, i + 1),
+                aiInstance: null,
                 headPos: null, // do it later
                 headDirection: 0, // up
                 nBlocks: 0, // do it later
@@ -146,6 +146,9 @@ export class GameRoom {
                 tracks: []
             };
             this.serverPlayerInfos.push(info);
+
+            info.aiInstance = new GameAI(this, i + 1);
+
             this.rebornList.push(info.playerID);
         }
     }
@@ -291,6 +294,8 @@ export class GameRoom {
     }
 
     async fillPlayer(playerId: number): Promise<void> {
+        // let cur: number = Date.now();
+
         this.maxT++;
         // flood fill
         for (let r: number = 0; r < this.nRows; r++) {
@@ -311,6 +316,8 @@ export class GameRoom {
         }
 
         this.serverPlayerInfos[playerId - 1].tracks = [];
+
+        // console.log('bfs costs ' + (Date.now() - cur) + 'ms');
     }
 
     async updateColorFilling(): Promise<void> {
@@ -335,9 +342,18 @@ export class GameRoom {
             info.headPos = this.randomSpawnNewPlayer(playerID);
             if (info.headPos !== null) {
                 info.state = 3;
+                info.aiInstance.init();
             }
         }
         this.rebornList = [];
+    }
+
+    async updateAIs(): Promise<void> {
+        for (const player of this.serverPlayerInfos) {
+            if (player.isAI && GameRoom.isAlive(player)) {
+                await player.aiInstance.updateAI();
+            }
+        }
     }
 
     /**
@@ -358,6 +374,7 @@ export class GameRoom {
         if (this.serverAdapter !== null) {
             this.serverAdapter.dispatchNewWorld();
         }
+        await this.updateAIs();
         let currentTime: number = Date.now();
         let duration: number = this.lastUpdateTime + GameRoom.roundDuration - currentTime;
         if (duration < 0) {
@@ -386,7 +403,6 @@ export class GameRoom {
         const index: number = validIndexes[GameRoom.randInt(0, validIndexes.length - 1)];
         const obj: ServerPlayerInfo = this.serverPlayerInfos[index];
         obj.isAI = false;
-        obj.aiInstance = null;
         this.addToClearList(obj.playerID, true); // wait for respawn
         return obj.playerID;
     }
@@ -394,7 +410,7 @@ export class GameRoom {
     replacePlayerWithAI(playerID: number): void {
         const obj: ServerPlayerInfo = this.serverPlayerInfos[playerID - 1];
         obj.isAI = true;
-        obj.aiInstance = new GameAI(this, playerID);
+        obj.aiInstance.init();
     }
 
     /**
