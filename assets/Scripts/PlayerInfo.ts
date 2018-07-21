@@ -15,6 +15,7 @@ export class PlayerInfo {
     headPos: MyPoint;
     headDirection: number;
     nBlocks: number;
+    nKill: number;
     state: number;// 0 活着，1正在爆炸，2死了
     tracks: [number, number, number][];
 }

@@ -488,7 +488,7 @@
       "__uuid__": "a06032a5-d849-43b7-90d4-861337533ba1"
     },
     "leaderBoardPrefab": {
-      "__uuid__": "b3095cc6-b55b-4141-860b-078e557e4c3e"
+      "__uuid__": "ff14a82b-6de4-4f9d-bece-19b29db4f9ab"
     },
     "squareFrame": {
       "__uuid__": "dc79874d-7b37-428f-a52f-01f2326d1265"
@@ -526,6 +526,9 @@
     },
     "soundKilled": {
       "__uuid__": "40de2155-415b-4c44-a28c-acc2f018a0ec"
+    },
+    "backgroundMusic": {
+      "__uuid__": "a160c7b4-02cc-4cb6-810b-42c3be977cd2"
     }
   },
   {
