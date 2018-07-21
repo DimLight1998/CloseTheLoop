@@ -514,7 +514,16 @@
     "timeEpsilon": 3,
     "trackOpacity": 128,
     "angleOpacity": 180,
-    "leaderBoardTopN": 5
+    "leaderBoardTopN": 5,
+    "soundCloseLoop": {
+      "__uuid__": "9cbffc6b-f69a-480d-9f3e-57c985cbd36e"
+    },
+    "soundKill": {
+      "__uuid__": "78e86b31-d34d-4c30-bf00-71a9180544f0"
+    },
+    "soundKilled": {
+      "__uuid__": "40de2155-415b-4c44-a28c-acc2f018a0ec"
+    }
   },
   {
     "__type__": "cc.Node",
