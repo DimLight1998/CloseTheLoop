@@ -252,6 +252,7 @@ export class GameRoom {
                             otherPlayer.headPos.x === curPlayerX &&
                             otherPlayer.headPos.y === curPlayerY &&
                             this.colorMap[otherPlayer.headPos.x][otherPlayer.headPos.y] !== otherPlayer.playerID) {
+                            this.soundFxs[player.playerID] = Math.max(this.soundFxs[player.playerID], 2);
                             this.addToClearList(otherPlayer.playerID, true);
                         }
                     }
