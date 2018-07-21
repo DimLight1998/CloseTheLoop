@@ -29,6 +29,7 @@ export default class GameView extends cc.Component {
 
     lightColorList: cc.Color[] = [];
     darkColorList: cc.Color[] = [];
+    darkerColorList: cc.Color[] = [];
 
     static toRGBTuple(color: tinycolorInstance): [number, number, number] {
         const tmp: ColorFormats.RGBA = color.toRgb();
@@ -125,6 +126,9 @@ export default class GameView extends cc.Component {
     myPlayerID: number;
     myRoomID: number;
     leftTop: MyPoint;
+
+    leaderBoardBars: cc.Node[] = [];
+    leaderBoardDetails: cc.Node[] = [];
 
     clientAdapter: IClientAdapter;
 
@@ -332,7 +336,6 @@ export default class GameView extends cc.Component {
 
     updateLeaderBoard(): void {
         let baseCount: number = this.leaderBoard[0][1];
-        console.log(this.leaderBoard);
         for (let i: number = 0; i < this.leaderBoardTopN; i++) {
             let [leaderBoardPlayerId, leaderBoardPlayerCount]: [number, number] = this.leaderBoard[i];
             let duration: number = this.nextDuration / 1000 * 2;
@@ -343,7 +346,12 @@ export default class GameView extends cc.Component {
             // update leader board width
             let scaleRatio: number = leaderBoardPlayerCount / baseCount;
 
-            this.leaderBoardRoot.children[i].runAction(cc.spawn(
+            let label: cc.Label = this.leaderBoardDetails[i].getComponent<cc.Label>(cc.Label);
+            label.string =
+                `${(leaderBoardPlayerCount * 100).toFixed(1)}%  ${this.players[leaderBoardPlayerId - 1].nKill}杀`;
+            label.node.color = this.darkerColorList[leaderBoardPlayerId];
+
+            this.leaderBoardBars[i].runAction(cc.spawn(
                 cc.tintTo(duration / 2, playerColor.getR(), playerColor.getG(), playerColor.getB()),
                 cc.scaleTo(duration, scaleRatio, 1).easing(cc.easeOut(1))
             ));
@@ -388,6 +396,7 @@ export default class GameView extends cc.Component {
         for (let c of GameView.colorList) {
             this.lightColorList.push(cc.color(...GameView.toRGBTuple(c)));
             this.darkColorList.push(cc.color(...GameView.toRGBTuple(c.clone().darken(20))));
+            this.darkerColorList.push(cc.color(...GameView.toRGBTuple(c.clone().darken(50))));
         }
         this.colorRoot = this.node.getChildByName('ColorMapRoot');
         this.trackRoot = this.node.getChildByName('TrackMapRoot');
@@ -402,10 +411,10 @@ export default class GameView extends cc.Component {
             this.leaderBoardRoot.addChild(cc.instantiate(this.leaderBoardPrefab));
         }
         for (let i: number = 0; i < this.leaderBoardTopN; i++) {
-            this.leaderBoardRoot.children[i].setPositionX(
-                this.viewWidth);
-            this.leaderBoardRoot.children[i].setPositionY(
-                this.viewHeight - i * this.leaderBoardRoot.children[i].height);
+            this.leaderBoardBars.push(this.leaderBoardRoot.children[i].getChildByName('LeaderBoardBar'));
+            this.leaderBoardDetails.push(this.leaderBoardRoot.children[i].getChildByName('Detail'));
+            this.leaderBoardRoot.children[i].setPositionX(this.viewWidth);
+            this.leaderBoardRoot.children[i].setPositionY(this.viewHeight - i * this.leaderBoardBars[i].height);
         }
 
         // scale halo

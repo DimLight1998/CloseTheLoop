@@ -144,6 +144,7 @@ export class GameRoom {
                 headPos: null, // do it later
                 headDirection: 0, // up
                 nBlocks: 0, // do it later
+                nKill: 0,
                 state: 2, // 0 活着，1正在爆炸，2死了
                 nextDirection: 0, // same as headDirection
                 tracks: []
@@ -229,6 +230,9 @@ export class GameRoom {
 
                             // update sound
                             this.soundFxs[player.playerID] = Math.max(this.soundFxs[player.playerID], 2);
+
+                            // update nKill
+                            this.getPlayerInfoById(player.playerID).nKill++;
                         } else {
                             this.addToClearList(otherPlayer.playerID, false);
                         }
@@ -253,6 +257,7 @@ export class GameRoom {
                             otherPlayer.headPos.y === curPlayerY &&
                             this.colorMap[otherPlayer.headPos.x][otherPlayer.headPos.y] !== otherPlayer.playerID) {
                             this.soundFxs[player.playerID] = Math.max(this.soundFxs[player.playerID], 2);
+                            this.getPlayerInfoById(player.playerID).nKill++;
                             this.addToClearList(otherPlayer.playerID, true);
                         }
                     }
@@ -357,6 +362,8 @@ export class GameRoom {
             info.headPos = this.randomSpawnNewPlayer(playerID);
             if (info.headPos !== null) {
                 info.state = 3;
+                info.nBlocks = 0;
+                info.nKill = 0;
                 info.aiInstance.init();
             }
         }
@@ -371,11 +378,19 @@ export class GameRoom {
             }
         }
 
+        for (let i: number = 0; i < count.length; i++) {
+            count[i] /= this.nRows * this.nCols;
+        }
+
         this.leaderBoard = [];
         for (let i: number = 1; i < count.length; i++) {
             this.leaderBoard.push([i, count[i]]);
         }
         this.leaderBoard.sort(([, score1], [, score2]) => score2 - score1);
+
+        for (let player of this.serverPlayerInfos) {
+            player.nBlocks = count[player.playerID];
+        }
     }
     async updateAIs(): Promise<void> {
         for (const player of this.serverPlayerInfos) {
@@ -507,7 +522,8 @@ export class GameRoom {
                 headDirection: info.headDirection,
                 nBlocks: info.nBlocks,
                 state: info.state,
-                tracks: info.tracks
+                tracks: info.tracks,
+                nKill: info.nKill
             });
             if (info.playerID === playerID2Track) {
                 leftTop = {
