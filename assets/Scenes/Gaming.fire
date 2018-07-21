@@ -476,8 +476,8 @@
     "leaderBoardRoot": {
       "__id__": 16
     },
-    "nRows": 40,
-    "nCols": 40,
+    "nRows": 21,
+    "nCols": 35,
     "spritePrefab": {
       "__uuid__": "7b3c8fd1-d3d2-4137-9e18-5eac56cbd066"
     },
@@ -827,7 +827,7 @@
     "_enabled": true,
     "totalNRows": 80,
     "totalNCols": 80,
-    "totalNPlayers": 14,
+    "totalNPlayers": 13,
     "view": {
       "__id__": 10
     }
