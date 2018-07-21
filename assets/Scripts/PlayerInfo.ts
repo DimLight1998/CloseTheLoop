@@ -24,4 +24,16 @@ export class PayLoadJson {
     players: PlayerInfo[];
     leftTop: MyPoint;
     leaderBoard: [number, number][];
+
+    /**
+     * Possible values:
+     *
+     * - 0: No sound.
+     * - 1: Loop closed.
+     * - 2: Kill others.
+     * - 3: Killed by others.
+     *
+     * **Higher value has higher priority.**
+     */
+    soundFx: number;
 }
