@@ -357,7 +357,7 @@ export default class GameView extends cc.Component {
     }
 
     updateLeaderBoard(): void {
-        let baseCount: number = this.leaderBoard[0][1];
+        let baseCount: number = this.leaderBoard[0].ratio;
         for (let i: number = 0; i < this.leaderBoardTopN; i++) {
             let leaderBoardPlayerId: number = this.leaderBoard[i].id;
             let leaderBoardPlayerCount: number = this.leaderBoard[i].ratio;
