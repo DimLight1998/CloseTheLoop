@@ -3,6 +3,7 @@ import { IClientAdapter } from './IAdapter';
 import CameraController from './CameraController';
 import { GameRoom } from './GameRoom';
 import tinycolor = require('../Lib/tinycolor.js');
+import { ColorUtil } from './Config';
 
 const { ccclass, property } = cc._decorator;
 
@@ -243,7 +244,6 @@ export default class GameView extends cc.Component {
             const pos: cc.Vec2 = this.getRowColPosition(this.players[i].headPos.x, this.players[i].headPos.y);
             this.headRoot.children[i].position = pos;
         }
-        this.haloNode.color = this.lightColorList[this.myPlayerID];
     }
 
 
@@ -263,6 +263,7 @@ export default class GameView extends cc.Component {
                 this.headRoot.children[i].color = this.darkColorList[info.playerID];
 
                 if (info.playerID === this.myPlayerID) {
+                    this.haloNode.color = this.lightColorList[this.myPlayerID];
                     if (this.foregroundNode !== null) {
                         this.foregroundNode.destroy();
                         this.foregroundNode = null;
@@ -393,9 +394,11 @@ export default class GameView extends cc.Component {
 
             // get player score, overwrite if better
             wx.setUserCloudStorage({
-                kVDataList: [
-                    { key: 'score', value: this.myLastPercentage },
-                    { key: 'timestamp', value: Date.now().toString() }
+                KVDataList: [
+                    {
+                        key: 'score',
+                        value: JSON.stringify({ percentage: this.myLastPercentage, timestamp: Date.now() })
+                    }
                 ],
                 success: () => console.log('good')
             });
@@ -474,7 +477,8 @@ export default class GameView extends cc.Component {
 
         // replace scale halo by using widget
 
-        this.foregroundNode.getChildByName('LoadLabel').color = this.haloNode.color = this.lightColorList[GameRoom.randInt(1, 14)];
+        [this.foregroundNode.getChildByName('LoadLabel').color, this.haloNode.color]
+            = ColorUtil.getInstance().getRandomColor().slice(0, 2);
 
         // play bgm
         cc.audioEngine.play(this.backgroundMusic, true, 1);

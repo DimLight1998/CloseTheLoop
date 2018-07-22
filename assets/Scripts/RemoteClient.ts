@@ -17,7 +17,7 @@ export class RemoteClient implements IClientAdapter {
     onRegisterSuccess: (playerId: number, roomId: number) => void;
 
     constructor(view: GameView, hostname: string, port: number, openCallback: () => void, closeCallback: () => void) {
-        this.webSocket = new WebSocket(`ws://${hostname}:${port}`);
+        this.webSocket = new WebSocket(`wss://${hostname}:${port}`);
         this.webSocket.onopen = openCallback;
         this.webSocket.onerror = (event: Event) => {
             console.log('error occured: ' + event);
