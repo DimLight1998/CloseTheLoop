@@ -30,6 +30,8 @@ export interface IClientAdapter {
         callback: (info: PayLoadJson, deltaTime: number) => void): void;
 
     rebornPlayer(playerId: number): void;
+
+    leaveRoom(playerId: number): void;
 }
 
 // 一个房间需要一个server adapter

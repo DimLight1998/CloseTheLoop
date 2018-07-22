@@ -68,4 +68,8 @@ export class LocalClient implements IClientAdapter {
     rebornPlayer(playerId: number): void {
         this.ctrl.roomManger.onlyServer.handleRebornPlayer(playerId);
     }
+
+    leaveRoom(playerId: number): void {
+        this.ctrl.roomManger.handlePlayerDisconnect(playerId, 0);
+    }
 }
