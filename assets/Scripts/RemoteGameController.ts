@@ -1,10 +1,11 @@
 import GameView from './GameView';
 import { RemoteClient } from './RemoteClient';
+import { ExitStatus } from './Config';
 
 const { ccclass, property } = cc._decorator;
 
 @ccclass
-export default class NewClass extends cc.Component {
+export default class RemoteGameController extends cc.Component {
     @property(GameView)
     view: GameView = null;
 
@@ -20,7 +21,11 @@ export default class NewClass extends cc.Component {
         this.client = new RemoteClient(this.view, this.hostname, this.port, () => {
             this.view.startGame();
         }, () => {
-            console.log('close');// todo
+            if (ExitStatus.isNormal()) {
+                cc.director.loadScene('Splash');
+            } else {
+                cc.director.loadScene('ConnLost');
+            }
         });
     }
 }

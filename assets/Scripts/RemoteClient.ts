@@ -1,6 +1,7 @@
 import { IClientAdapter } from './IAdapter';
 import { PayLoadJson } from './PlayerInfo';
 import GameView from './GameView';
+import { ExitStatus } from './Config';
 
 export class RemoteClient implements IClientAdapter {
     webSocket: WebSocket = null;
@@ -29,6 +30,7 @@ export class RemoteClient implements IClientAdapter {
         this.view.setClientAdapter(this);
 
         this.webSocket.onmessage = this.handleIncomingMessage.bind(this);
+        ExitStatus.setToExceptional();
     }
 
     changeDirection(playerID: number, direction: number): void {// @bug
@@ -93,6 +95,7 @@ export class RemoteClient implements IClientAdapter {
     }
 
     leaveRoom(playerId: number): void {
+        ExitStatus.setToNormal();
         this.webSocket.close();
     }
 }

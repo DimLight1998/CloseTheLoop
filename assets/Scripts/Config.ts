@@ -70,3 +70,19 @@ export class ColorUtil {
         return [ColorUtil.brightColors[i], ColorUtil.darkColors[i], ColorUtil.darkerColors[i]];
     }
 }
+
+export class ExitStatus {
+    private static isNormalExit: boolean = false;
+
+    static setToNormal(): void {
+        ExitStatus.isNormalExit = true;
+    }
+
+    static setToExceptional(): void {
+        ExitStatus.isNormalExit = false;
+    }
+
+    static isNormal(): boolean {
+        return ExitStatus.isNormalExit;
+    }
+}
