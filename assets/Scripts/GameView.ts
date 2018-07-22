@@ -392,15 +392,11 @@ export default class GameView extends cc.Component {
         if (!this.asking && !GameRoom.isAlive(this.players[this.myPlayerID - 1])) {
             this.asking = true;
 
-            // get player score, overwrite if better
-            wx.setUserCloudStorage({
-                KVDataList: [
-                    {
-                        key: 'score',
-                        value: JSON.stringify({ percentage: this.myLastPercentage, timestamp: Date.now() })
-                    }
-                ],
-                success: () => console.log('good')
+            // send player score to sub domain
+            wx.postMessage({
+                command: 'UpdatePlayerScore',
+                param1: this.myLastPercentage,
+                param2: this.players[this.myPlayerID - 1].nKill
             });
 
             this.clientAdapter.rebornPlayer(this.myPlayerID);
