@@ -3,6 +3,21 @@ const { ccclass, property } = cc._decorator;
 
 const TileSize: number = 40;
 
+export class SingleMultipleSelector {
+    private static isSingleMode: boolean = true;
+    public static setSingle(): void {
+        SingleMultipleSelector.isSingleMode = true;
+    }
+
+    public static setMultiple(): void {
+        SingleMultipleSelector.isSingleMode = false;
+    }
+
+    public static isSingle(): boolean {
+        return SingleMultipleSelector.isSingleMode;
+    }
+}
+
 export function GetTileSize(): number { return TileSize; }
 
 export class ColorUtil {

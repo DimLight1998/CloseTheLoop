@@ -143,6 +143,7 @@ export default class GameView extends cc.Component {
     firstFlag: boolean = true;
 
     asking: boolean = false;
+    myLastPercentage: number = 0;
 
     public setClientAdapter(adapter: IClientAdapter): void {
         this.clientAdapter = adapter;
@@ -377,17 +378,29 @@ export default class GameView extends cc.Component {
                 cc.scaleTo(duration, scaleRatio, 1).easing(cc.easeOut(1))
             ));
         }
+
+        // update myLastPercentage
+        for (let i: number = 0; i < this.leaderBoard.length; i++) {
+            if (this.leaderBoard[i][0] === this.myPlayerID) {
+                this.myLastPercentage = this.leaderBoard[i][1];
+            }
+        }
     }
 
     updateRebornAsk(): void {
         if (!this.asking && !GameRoom.isAlive(this.players[this.myPlayerID - 1])) {
             this.asking = true;
-            console.log('will you reborn?');
 
-            setTimeout(() => {
-                console.log('yes, i will!');
-                this.clientAdapter.rebornPlayer(this.myPlayerID);
-            }, 3000);
+            // get player score, overwrite if better
+            wx.setUserCloudStorage({
+                kVDataList: [
+                    { key: 'score', value: this.myLastPercentage },
+                    { key: 'timestamp', value: Date.now().toString() }
+                ],
+                success: () => console.log('good')
+            });
+
+            this.clientAdapter.rebornPlayer(this.myPlayerID);
         }
     }
 

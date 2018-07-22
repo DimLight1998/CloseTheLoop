@@ -88,6 +88,9 @@
       },
       {
         "__id__": 25
+      },
+      {
+        "__id__": 30
       }
     ],
     "_prefab": null,
@@ -1005,16 +1008,18 @@
     "_fitHeight": true
   },
   {
-    "__type__": "11f631wAZtM6q4Y1a/eovny",
+    "__type__": "0cc56X/YcBIcKtnmpnj4lc4",
     "_name": "",
     "_objFlags": 0,
     "node": {
       "__id__": 2
     },
     "_enabled": true,
-    "judgeDistance": 20,
-    "view": {
-      "__id__": 10
+    "localGameNode": {
+      "__id__": 26
+    },
+    "remoteGameNode": {
+      "__id__": 28
     }
   },
   {
@@ -1026,7 +1031,7 @@
     },
     "_children": [],
     "_tag": -1,
-    "_active": false,
+    "_active": true,
     "_components": [
       {
         "__id__": 27
@@ -1093,7 +1098,7 @@
     },
     "_children": [],
     "_tag": -1,
-    "_active": true,
+    "_active": false,
     "_components": [
       {
         "__id__": 29
@@ -1149,5 +1154,18 @@
     },
     "hostname": "183.172.184.200",
     "port": 12306
+  },
+  {
+    "__type__": "11f631wAZtM6q4Y1a/eovny",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 2
+    },
+    "_enabled": true,
+    "judgeDistance": 20,
+    "view": {
+      "__id__": 10
+    }
   }
 ]
