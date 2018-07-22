@@ -2,6 +2,7 @@ import { IClientAdapter } from './IAdapter';
 import LocalGameController from './LocalGameController';
 import GameView from './GameView';
 import { PayLoadJson } from './PlayerInfo';
+import { PayLoad } from './PayLoadProtobuf';
 
 /**
  * This class is an implementation of the ClientAdapter for local game.
@@ -11,12 +12,12 @@ export class LocalClient implements IClientAdapter {
     /**
      * Save incoming information about the world.
      */
-    infoQueue: string[] = [];
+    infoQueue: Uint8Array[] = [];
     waitingQueue: number[] = [];
     arriveQueue: number[] = [];
     ctrl: LocalGameController = null;
     view: GameView = null;
-    newWorldCallBack: (info: PayLoadJson, deltaTime: number) => void;
+    newWorldCallBack: (info: PayLoad, deltaTime: number) => void;
 
     constructor(ctrl: LocalGameController, view: GameView) {
         this.ctrl = ctrl;
@@ -34,22 +35,22 @@ export class LocalClient implements IClientAdapter {
         if (this.infoQueue.length === 0) {
             this.waitingQueue.push(currentTime);
         } else {
-            this.newWorldCallBack(JSON.parse(this.infoQueue.shift()),
+            this.newWorldCallBack(PayLoad.decode(this.infoQueue.shift()),
                 this.arriveQueue.shift() - currentTime);
         }
     }
 
-    async pushNewWorldResponse(infoString: string): Promise<void> {
+    async pushNewWorldResponse(infoArray: Uint8Array): Promise<void> {
         if (this.waitingQueue.length === 0) {
             if (this.infoQueue.length > 0) {
                 console.log('Warning! Still have ' + this.infoQueue.length + ' round to consume!');
                 this.infoQueue = [];
                 this.arriveQueue = [];
             }
-            this.infoQueue.push(infoString);
+            this.infoQueue.push(infoArray);
             this.arriveQueue.push(Date.now());
         } else {
-            this.newWorldCallBack(JSON.parse(infoString),
+            this.newWorldCallBack(PayLoad.decode(infoArray),
                 Date.now() - this.waitingQueue.shift());
         }
     }
@@ -60,7 +61,7 @@ export class LocalClient implements IClientAdapter {
     }
 
     registerViewPort(playerID2Track: number, roomID: number, nRows: number, nCols: number,
-        callback: (info: PayLoadJson, deltaTime: number) => void): void {
+        callback: (info: PayLoad, deltaTime: number) => void): void {
         this.newWorldCallBack = callback;
         this.ctrl.roomManger.onlyServer.addNewWorldListener(this, playerID2Track, nRows, nCols);
     }

@@ -1,6 +1,6 @@
 import { IClientAdapter } from './IAdapter';
-import { PayLoadJson } from './PlayerInfo';
 import GameView from './GameView';
+import { PayLoad } from './PayLoadProtobuf';
 
 export class RemoteClient implements IClientAdapter {
     webSocket: WebSocket = null;
@@ -9,15 +9,16 @@ export class RemoteClient implements IClientAdapter {
     myRoomId: number = -1;
     myClientSocketId: number = -1;
 
-    infoQueue: string[] = [];
+    infoQueue: Uint8Array[] = [];
     waitingQueue: number[] = [];
     arriveQueue: number[] = [];
-    onWorldRequestSuccess: (info: PayLoadJson, deltaTime: number) => void;
+    onWorldRequestSuccess: (info: PayLoad, deltaTime: number) => void;
 
     onRegisterSuccess: (playerId: number, roomId: number) => void;
 
     constructor(view: GameView, hostname: string, port: number, openCallback: () => void, closeCallback: () => void) {
         this.webSocket = new WebSocket(`ws://${hostname}:${port}`);
+        this.webSocket.binaryType = 'arraybuffer';
         this.webSocket.onopen = openCallback;
         this.webSocket.onerror = (event: Event) => {
             console.log('error occured: ' + event);
@@ -39,7 +40,7 @@ export class RemoteClient implements IClientAdapter {
         if (this.infoQueue.length === 0) {
             this.waitingQueue.push(currentTime);
         } else {
-            this.onWorldRequestSuccess(JSON.parse(this.infoQueue.shift()), this.arriveQueue.shift() - currentTime);
+            this.onWorldRequestSuccess(PayLoad.decode(this.infoQueue.shift()), this.arriveQueue.shift() - currentTime);
         }
     }
 
@@ -50,33 +51,27 @@ export class RemoteClient implements IClientAdapter {
 
     registerViewPort(playerID2Track: number, roomID: number,
         nRows: number, nCols: number,
-        callback: (info: PayLoadJson, deltaTime: number) => void): void {
+        callback: (info: PayLoad, deltaTime: number) => void): void {
         this.onWorldRequestSuccess = callback;
         this.webSocket.send(`REG_VP@${playerID2Track}@${roomID}@${nRows}@${nCols}@${this.myClientSocketId}`);
     }
 
     handleIncomingMessage(msgEvt: MessageEvent): void {
-        let message: string = msgEvt.data.toString();
-        if (message[0] === '{') {
-            let messageObj: any = JSON.parse(message);
-            let type: string = messageObj.type;
-            let content: string = messageObj.content;
-            switch (type) {
-                case 'WORLD':
-                    if (this.waitingQueue.length === 0) {
-                        if (this.infoQueue.length > 0) {
-                            console.log('Warning! Still have ' + this.infoQueue.length + ' round to consume!');
-                            this.infoQueue = [];
-                            this.arriveQueue = [];
-                        }
-                        this.infoQueue.push(content);
-                        this.arriveQueue.push(Date.now());
-                    } else {
-                        this.onWorldRequestSuccess(JSON.parse(content), Date.now() - this.waitingQueue.shift());
-                    }
-                    break;
+        if (msgEvt.data instanceof ArrayBuffer) {
+            const content: Uint8Array = new Uint8Array(msgEvt.data);
+            if (this.waitingQueue.length === 0) {
+                if (this.infoQueue.length > 0) {
+                    console.log('Warning! Still have ' + this.infoQueue.length + ' round to consume!');
+                    this.infoQueue = [];
+                    this.arriveQueue = [];
+                }
+                this.infoQueue.push(content);
+                this.arriveQueue.push(Date.now());
+            } else {
+                this.onWorldRequestSuccess(PayLoad.decode(content), Date.now() - this.waitingQueue.shift());
             }
         } else {
+            let message: string = msgEvt.data.toString();
             let sections: string[] = message.split('@');
             switch (sections[0]) {
                 case 'REG_OK':

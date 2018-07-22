@@ -3,6 +3,7 @@ import { IClientAdapter } from './IAdapter';
 import CameraController from './CameraController';
 import { GameRoom } from './GameRoom';
 import tinycolor = require('../Lib/tinycolor.js');
+import { PayLoad, MyPointProto, IMyPointProto, IPlayerInfoProto, ILeaderBoardItem } from './PayLoadProtobuf';
 
 const { ccclass, property } = cc._decorator;
 
@@ -121,14 +122,14 @@ export default class GameView extends cc.Component {
 
     colorMap: number[][] = null;
     trackMap: number[][] = null;
-    players: PlayerInfo[] = [];
+    players: IPlayerInfoProto[] = [];
 
     oldColorMap: number[][] = null;
-    leaderBoard: [number, number][] = [];
+    leaderBoard: ILeaderBoardItem[] = [];
 
     myPlayerID: number;
     myRoomID: number;
-    leftTop: MyPoint;
+    leftTop: IMyPointProto;
 
     leaderBoardBars: cc.Node[] = [];
     leaderBoardDetails: cc.Node[] = [];
@@ -160,7 +161,7 @@ export default class GameView extends cc.Component {
     /**
      * update the view from given information.
      */
-    public setLeftTop(newLeftTop: MyPoint, mapString: string): void {
+    public setLeftTop(newLeftTop: IMyPointProto, mapString: Uint8Array): void {
         let cnt: number = 0;
         this.colorTiles = [];
         this.trackTiles = [];
@@ -175,7 +176,7 @@ export default class GameView extends cc.Component {
             for (let j: number = 0; j < this.nCols; j++) {
                 this.colorTiles[newLeftTop.x + i][newLeftTop.y + j] = this.colorRoot.children[cnt];
                 this.trackTiles[newLeftTop.x + i][newLeftTop.y + j] = this.trackRoot.children[cnt];
-                const charCode: number = mapString.charCodeAt(cnt);
+                const charCode: number = mapString[cnt];
                 // tslint:disable-next-line:no-bitwise
                 this.colorMap[newLeftTop.x + i][newLeftTop.y + j] = charCode & ((1 << 4) - 1);
                 // tslint:disable-next-line:no-bitwise
@@ -253,7 +254,7 @@ export default class GameView extends cc.Component {
         }
 
         for (let i: number = 0; i < this.players.length; i++) {
-            const info: PlayerInfo = this.players[i];
+            const info: IPlayerInfoProto = this.players[i];
 
             if (info.state === 3) {
                 const pos: cc.Vec2 = this.getRowColPosition(info.headPos.x, info.headPos.y);
@@ -298,7 +299,7 @@ export default class GameView extends cc.Component {
         this.clientAdapter.requestNewWorld(Date.now());
     }
 
-    public refreshData(info: PayLoadJson, deltaTime: number): void {
+    public refreshData(info: PayLoad, deltaTime: number): void {
         this.setLeftTop(info.leftTop, info.mapString);
         this.players = info.players;
         this.leaderBoard = info.leaderBoard;
@@ -358,7 +359,8 @@ export default class GameView extends cc.Component {
     updateLeaderBoard(): void {
         let baseCount: number = this.leaderBoard[0][1];
         for (let i: number = 0; i < this.leaderBoardTopN; i++) {
-            let [leaderBoardPlayerId, leaderBoardPlayerCount]: [number, number] = this.leaderBoard[i];
+            let leaderBoardPlayerId: number = this.leaderBoard[i].id;
+            let leaderBoardPlayerCount: number = this.leaderBoard[i].ratio;
             let duration: number = this.nextDuration / 1000 * 2;
 
             // update leader board color
@@ -477,7 +479,7 @@ export default class GameView extends cc.Component {
         }
         const ratio: number = dt / this.timeLeft;
         for (let i: number = 0; i < this.players.length; i++) {
-            const info: PlayerInfo = this.players[i];
+            const info: IPlayerInfoProto = this.players[i];
             if (info.state === 0) {
                 const playerNode: cc.Node = this.headRoot.children[i];
                 const targetPos: cc.Vec2 = this.getRowColPosition(info.headPos.x, info.headPos.y);
