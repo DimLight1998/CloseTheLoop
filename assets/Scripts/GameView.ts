@@ -287,9 +287,9 @@ export default class GameView extends cc.Component {
             }
 
             for (let t of info.tracks) {
-                if (!this.outOfView(t[0], t[1])) {
-                    this.trackTiles[t[0]][t[1]].getComponent(cc.Sprite).spriteFrame = this.triangleFrames[t[2]];
-                    this.trackTiles[t[0]][t[1]].opacity = this.angleOpacity;
+                if (!this.outOfView(t.x, t.y)) {
+                    this.trackTiles[t.x][t.y].getComponent(cc.Sprite).spriteFrame = this.triangleFrames[t.d];
+                    this.trackTiles[t.x][t.y].opacity = this.angleOpacity;
                 }
             }
         }
@@ -374,6 +374,7 @@ export default class GameView extends cc.Component {
                 `${(leaderBoardPlayerCount * 100).toFixed(1)}%  ${this.players[leaderBoardPlayerId - 1].nKill}杀`;
             label.node.color = this.darkerColorList[leaderBoardPlayerId];
 
+            this.leaderBoardBars[i].stopAllActions();
             this.leaderBoardBars[i].runAction(cc.spawn(
                 cc.tintTo(duration / 2, playerColor.getR(), playerColor.getG(), playerColor.getB()),
                 cc.scaleTo(duration, scaleRatio, 1).easing(cc.easeOut(1))
