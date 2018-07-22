@@ -41,6 +41,9 @@ export default class GameView extends cc.Component {
     }
 
     @property(cc.Node)
+    foregroundNode: cc.Node = null;
+
+    @property(cc.Node)
     cameraNode: cc.Node = null;
 
     @property(cc.Node)
@@ -137,6 +140,10 @@ export default class GameView extends cc.Component {
 
     timeLeft: number;
 
+    firstFlag: boolean = true;
+
+    asking: boolean = false;
+
     public setClientAdapter(adapter: IClientAdapter): void {
         this.clientAdapter = adapter;
     }
@@ -184,6 +191,7 @@ export default class GameView extends cc.Component {
      * This function should only be called once in a game.
      */
     public startGame(): void { // call it after setting client adapter
+        this.asking = true;
         this.clientAdapter.registerPlayer(
             (playerId: number, roomId: number): void => {
                 [this.myPlayerID, this.myRoomID] = [playerId, roomId];
@@ -222,21 +230,30 @@ export default class GameView extends cc.Component {
         return cc.v2(spriteWidth * col, -spriteHeight * row);
     }
 
-
-    updateHeads(): void {
+    updateHeadsFirstTime(): void {
         while (this.headRoot.childrenCount > this.players.length) {
             this.headRoot.children[this.headRoot.childrenCount - 1].destroy();
         }
         while (this.headRoot.childrenCount < this.players.length) {
             this.headRoot.addChild(cc.instantiate(this.playerPrefab));
         }
+        for (let i: number = 0; i < this.headRoot.childrenCount; i++) {
+            this.headRoot.children[i].color = this.darkColorList[this.players[i].playerID];
+            const pos: cc.Vec2 = this.getRowColPosition(this.players[i].headPos.x, this.players[i].headPos.y);
+            this.headRoot.children[i].position = pos;
+        }
+        this.haloNode.color = this.lightColorList[this.myPlayerID];
+    }
+
+
+    updateHeads(): void {
+
+        if (this.firstFlag) {
+            this.updateHeadsFirstTime();
+        }
 
         for (let i: number = 0; i < this.players.length; i++) {
             const info: PlayerInfo = this.players[i];
-
-            if (info.playerID === this.myPlayerID) {
-                this.haloNode.color = this.lightColorList[this.myPlayerID];
-            }
 
             if (info.state === 3) {
                 const pos: cc.Vec2 = this.getRowColPosition(info.headPos.x, info.headPos.y);
@@ -245,6 +262,11 @@ export default class GameView extends cc.Component {
                 this.headRoot.children[i].color = this.darkColorList[info.playerID];
 
                 if (info.playerID === this.myPlayerID) {
+                    if (this.foregroundNode !== null) {
+                        this.foregroundNode.destroy();
+                        this.foregroundNode = null;
+                    }
+                    this.asking = false;
                     this.cameraNode.getComponent(CameraController).setFollower(this.headRoot.children[i]);
                 }
             } else if (info.state === 1) {
@@ -269,7 +291,6 @@ export default class GameView extends cc.Component {
                     this.trackTiles[t[0]][t[1]].opacity = this.angleOpacity;
                 }
             }
-            // todo player die, animation, explosion
         }
     }
 
@@ -358,6 +379,18 @@ export default class GameView extends cc.Component {
         }
     }
 
+    updateRebornAsk(): void {
+        if (!this.asking && !GameRoom.isAlive(this.players[this.myPlayerID - 1])) {
+            this.asking = true;
+            console.log('will you reborn?');
+
+            setTimeout(() => {
+                console.log('yes, i will!');
+                this.clientAdapter.rebornPlayer(this.myPlayerID);
+            }, 3000);
+        }
+    }
+
     onWorldChange(deltaTime: number): void {
         // let cur: number = Date.now();
         this.adjustDuration(deltaTime);
@@ -365,6 +398,10 @@ export default class GameView extends cc.Component {
         this.updateHeads();
         this.updateLeaderBoard();
         this.playSound();
+        this.updateRebornAsk();
+        if (this.firstFlag) {
+            this.firstFlag = false;
+        }
         // console.log('world change costs ' + (Date.now() - cur) + 'ms');
     }
 
@@ -390,8 +427,13 @@ export default class GameView extends cc.Component {
      * only tiles in the view will be rendered.
      */
     onLoad(): void {
-        this.viewWidth = this.node.parent.width;
-        this.viewHeight = this.node.parent.height;
+
+        this.firstFlag = true;
+        this.asking = false;
+
+        this.viewWidth = cc.view.getVisibleSizeInPixel().width;
+        this.viewHeight = cc.view.getVisibleSizeInPixel().height;
+        this.nCols = Math.ceil((this.nRows - 3) * this.viewWidth / this.viewHeight) + 3;
 
         for (let c of GameView.colorList) {
             this.lightColorList.push(cc.color(...GameView.toRGBTuple(c)));
@@ -413,13 +455,13 @@ export default class GameView extends cc.Component {
         for (let i: number = 0; i < this.leaderBoardTopN; i++) {
             this.leaderBoardBars.push(this.leaderBoardRoot.children[i].getChildByName('LeaderBoardBar'));
             this.leaderBoardDetails.push(this.leaderBoardRoot.children[i].getChildByName('Detail'));
-            this.leaderBoardRoot.children[i].setPositionX(this.viewWidth);
-            this.leaderBoardRoot.children[i].setPositionY(this.viewHeight - i * this.leaderBoardBars[i].height);
+            this.leaderBoardRoot.children[i].setPositionX(0);
+            this.leaderBoardRoot.children[i].setPositionY(- i * this.leaderBoardBars[i].height);
         }
 
-        // scale halo
-        this.haloNode.width = this.viewWidth;
-        this.haloNode.height = this.viewHeight;
+        // replace scale halo by using widget
+
+        this.foregroundNode.getChildByName('LoadLabel').color = this.haloNode.color = this.lightColorList[GameRoom.randInt(1, 14)];
 
         // play bgm
         cc.audioEngine.play(this.backgroundMusic, true, 1);

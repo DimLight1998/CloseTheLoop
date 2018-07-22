@@ -47,4 +47,8 @@ export class LocalServer implements IServerAdapter {
             viewNCols
         });
     }
+
+    handleRebornPlayer(playerId: number): void {
+        this.room.rebornHumanPlayer(playerId);
+    }
 }

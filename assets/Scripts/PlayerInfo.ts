@@ -1,3 +1,4 @@
+// todo keep this file sync with local until ddl.
 export class MyPoint {
     x: number;
     y: number;

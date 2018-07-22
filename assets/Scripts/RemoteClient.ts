@@ -87,4 +87,8 @@ export class RemoteClient implements IClientAdapter {
             }
         }
     }
+
+    rebornPlayer(playerId: number): void {
+        this.webSocket.send(`REBORN@${playerId}@${this.myRoomId}`);
+    }
 }
