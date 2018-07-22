@@ -142,6 +142,8 @@ export default class GameView extends cc.Component {
 
     firstFlag: boolean = true;
 
+    asking: boolean = false;
+
     public setClientAdapter(adapter: IClientAdapter): void {
         this.clientAdapter = adapter;
     }
@@ -189,6 +191,7 @@ export default class GameView extends cc.Component {
      * This function should only be called once in a game.
      */
     public startGame(): void { // call it after setting client adapter
+        this.asking = true;
         this.clientAdapter.registerPlayer(
             (playerId: number, roomId: number): void => {
                 [this.myPlayerID, this.myRoomID] = [playerId, roomId];
@@ -239,6 +242,7 @@ export default class GameView extends cc.Component {
             const pos: cc.Vec2 = this.getRowColPosition(this.players[i].headPos.x, this.players[i].headPos.y);
             this.headRoot.children[i].position = pos;
         }
+        this.haloNode.color = this.lightColorList[this.myPlayerID];
     }
 
 
@@ -251,10 +255,6 @@ export default class GameView extends cc.Component {
         for (let i: number = 0; i < this.players.length; i++) {
             const info: PlayerInfo = this.players[i];
 
-            if (info.playerID === this.myPlayerID) {
-                this.haloNode.color = this.lightColorList[this.myPlayerID];
-            }
-
             if (info.state === 3) {
                 const pos: cc.Vec2 = this.getRowColPosition(info.headPos.x, info.headPos.y);
                 this.headRoot.children[i].position = pos;
@@ -266,6 +266,7 @@ export default class GameView extends cc.Component {
                         this.foregroundNode.destroy();
                         this.foregroundNode = null;
                     }
+                    this.asking = false;
                     this.cameraNode.getComponent(CameraController).setFollower(this.headRoot.children[i]);
                 }
             } else if (info.state === 1) {
@@ -378,6 +379,18 @@ export default class GameView extends cc.Component {
         }
     }
 
+    updateRebornAsk(): void {
+        if (!this.asking && !GameRoom.isAlive(this.players[this.myPlayerID - 1])) {
+            this.asking = true;
+            console.log('will you reborn?');
+
+            setTimeout(() => {
+                console.log('yes, i will!');
+                this.clientAdapter.rebornPlayer(this.myPlayerID);
+            }, 3000);
+        }
+    }
+
     onWorldChange(deltaTime: number): void {
         // let cur: number = Date.now();
         this.adjustDuration(deltaTime);
@@ -385,6 +398,7 @@ export default class GameView extends cc.Component {
         this.updateHeads();
         this.updateLeaderBoard();
         this.playSound();
+        this.updateRebornAsk();
         if (this.firstFlag) {
             this.firstFlag = false;
         }
@@ -415,6 +429,7 @@ export default class GameView extends cc.Component {
     onLoad(): void {
 
         this.firstFlag = true;
+        this.asking = false;
 
         this.viewWidth = cc.view.getVisibleSizeInPixel().width;
         this.viewHeight = cc.view.getVisibleSizeInPixel().height;

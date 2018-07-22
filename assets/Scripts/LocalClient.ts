@@ -64,4 +64,8 @@ export class LocalClient implements IClientAdapter {
         this.newWorldCallBack = callback;
         this.ctrl.roomManger.onlyServer.addNewWorldListener(this, playerID2Track, nRows, nCols);
     }
+
+    rebornPlayer(playerId: number): void {
+        this.ctrl.roomManger.onlyServer.handleRebornPlayer(playerId);
+    }
 }
