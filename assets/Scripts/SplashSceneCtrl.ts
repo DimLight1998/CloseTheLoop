@@ -46,13 +46,6 @@ export default class SplashSceneCtrl extends cc.Component {
     }
 
     enterLeaderBoard(): void {
-        // send resolution info to sub-domain
-        wx.postMessage({
-            command: 'SetResolution',
-            param1: cc.view.getDesignResolutionSize().width,
-            param2: cc.view.getDesignResolutionSize().height
-        });
-
         wx.postMessage({
             command: 'DisplayFriendsScore'
         });
