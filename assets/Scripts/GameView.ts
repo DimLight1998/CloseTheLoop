@@ -139,11 +139,19 @@ export default class GameView extends cc.Component {
     // which sound to play this round
     roundSoundFx: number;
 
-    timeLeft: number;
-
     firstFlag: boolean = true;
 
     asking: boolean = false;
+
+    timer: any;
+
+    spriteWidth: number;
+    spriteHeight: number;
+
+    headSpeedX: number;
+    headSpeedY: number;
+
+    timeLeft: number;
 
     public setClientAdapter(adapter: IClientAdapter): void {
         this.clientAdapter = adapter;
@@ -226,9 +234,7 @@ export default class GameView extends cc.Component {
      * Get location on the view for a given logical coordinate.
      */
     getRowColPosition(row: number, col: number): cc.Vec2 {
-        const spriteWidth: number = this.colorRoot.children[0].width;
-        const spriteHeight: number = this.colorRoot.children[0].height;
-        return cc.v2(spriteWidth * col, -spriteHeight * row);
+        return cc.v2(this.spriteWidth * col, -this.spriteHeight * row);
     }
 
     updateHeadsFirstTime(): void {
@@ -240,8 +246,6 @@ export default class GameView extends cc.Component {
         }
         for (let i: number = 0; i < this.headRoot.childrenCount; i++) {
             this.headRoot.children[i].color = this.darkColorList[this.players[i].playerID];
-            const pos: cc.Vec2 = this.getRowColPosition(this.players[i].headPos.x, this.players[i].headPos.y);
-            this.headRoot.children[i].position = pos;
         }
         this.haloNode.color = this.lightColorList[this.myPlayerID];
     }
@@ -256,7 +260,12 @@ export default class GameView extends cc.Component {
         for (let i: number = 0; i < this.players.length; i++) {
             const info: IPlayerInfoProto = this.players[i];
 
-            if (info.state === 3) {
+            let ix: number, iy: number;
+            if (info.state === 0) {
+                ix = info.headPos.x - GameRoom.directions[info.headDirection].x;
+                iy = info.headPos.y - GameRoom.directions[info.headDirection].y;
+                this.headRoot.children[i].position = this.getRowColPosition(ix, iy);
+            } else if (info.state === 3) {
                 const pos: cc.Vec2 = this.getRowColPosition(info.headPos.x, info.headPos.y);
                 this.headRoot.children[i].position = pos;
 
@@ -315,6 +324,8 @@ export default class GameView extends cc.Component {
                 this.nextDuration -= this.timeEpsilon;
             }
         }
+        this.headSpeedX = this.spriteWidth * 1000 / (this.nextDuration + 0.1);
+        this.headSpeedY = this.spriteHeight * 1000 / (this.nextDuration + 0.1);
         this.timeLeft = this.nextDuration / 1000;
     }
 
@@ -395,7 +406,7 @@ export default class GameView extends cc.Component {
     }
 
     onWorldChange(deltaTime: number): void {
-        // let cur: number = Date.now();
+        let currentTime: number = Date.now();// fixme
         this.adjustDuration(deltaTime);
         this.updateTiles();
         this.updateHeads();
@@ -405,7 +416,11 @@ export default class GameView extends cc.Component {
         if (this.firstFlag) {
             this.firstFlag = false;
         }
-        // console.log('world change costs ' + (Date.now() - cur) + 'ms');
+        let duration: number = currentTime + this.nextDuration - Date.now();
+        if (duration < 0) {
+            duration = 0;
+        }
+        this.timer = setTimeout(this.fetchNewWorld.bind(this), duration);
     }
 
     playSound(): void {
@@ -451,6 +466,10 @@ export default class GameView extends cc.Component {
             this.colorRoot.addChild(cc.instantiate(this.spritePrefab));
             this.trackRoot.addChild(cc.instantiate(this.spritePrefab));
         }
+        if (this.colorRoot.childrenCount > 0) {
+            this.spriteWidth = this.colorRoot.children[0].width;
+            this.spriteHeight = this.colorRoot.children[0].height;
+        }
 
         for (let i: number = 0; i < this.leaderBoardTopN; i++) {
             this.leaderBoardRoot.addChild(cc.instantiate(this.leaderBoardPrefab));
@@ -474,23 +493,21 @@ export default class GameView extends cc.Component {
      * change all players' position based on the time.
      * if the map needs to be updated, update it.
      */
-    update(dt: number): void {
-        if (this.timeLeft < dt) {
-            this.timeLeft = dt;
+    update(_dt: number): void {
+        let dt: number = _dt;
+        if (dt > this.timeLeft) {
+            dt = this.timeLeft;
         }
-        const ratio: number = dt / this.timeLeft;
-        for (let i: number = 0; i < this.players.length; i++) {
-            const info: IPlayerInfoProto = this.players[i];
-            if (info.state === 0) {
-                const playerNode: cc.Node = this.headRoot.children[i];
-                const targetPos: cc.Vec2 = this.getRowColPosition(info.headPos.x, info.headPos.y);
-                const deltaVector: cc.Vec2 = targetPos.sub(playerNode.position).mul(ratio);
-                playerNode.position = playerNode.position.add(deltaVector);
+        if (dt > 0) {
+            this.timeLeft -= dt;
+            for (let i: number = 0; i < this.players.length; i++) {
+                const info: IPlayerInfoProto = this.players[i];
+                if (info.state === 0) {// only state 0 is moving
+                    const playerNode: cc.Node = this.headRoot.children[i];
+                    playerNode.setPositionX(playerNode.x + GameRoom.directions[info.headDirection].y * this.headSpeedX * dt);
+                    playerNode.setPositionY(playerNode.y - GameRoom.directions[info.headDirection].x * this.headSpeedY * dt);
+                }
             }
-        }
-        this.timeLeft -= dt;
-        if (this.timeLeft <= 0) {
-            this.fetchNewWorld();
         }
     }
 }

@@ -62,8 +62,8 @@ export class RemoteClient implements IClientAdapter {
             if (this.waitingQueue.length === 0) {
                 if (this.infoQueue.length > 0) {
                     console.log('Warning! Still have ' + this.infoQueue.length + ' round to consume!');
-                    this.infoQueue = [];
-                    this.arriveQueue = [];
+                    // this.infoQueue = []; todo test it
+                    // this.arriveQueue = [];
                 }
                 this.infoQueue.push(content);
                 this.arriveQueue.push(Date.now());
