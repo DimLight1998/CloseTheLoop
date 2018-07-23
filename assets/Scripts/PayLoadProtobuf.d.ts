@@ -1,4 +1,5 @@
-import * as $protobuf from "../Lib/protobufjs";
+// import * as $protobuf from "../Lib/protobufjs";
+let $protobuf: any = protobuf;
 /** Properties of a MyPointProto. */
 export interface IMyPointProto {
 
@@ -55,7 +56,7 @@ export class MyPointProto implements IMyPointProto {
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): MyPointProto;
+    public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): MyPointProto;
 
     /**
      * Decodes a MyPointProto message from the specified reader or buffer, length delimited.
@@ -64,14 +65,14 @@ export class MyPointProto implements IMyPointProto {
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): MyPointProto;
+    public static decodeDelimited(reader: ($protobuf.Reader | Uint8Array)): MyPointProto;
 
     /**
      * Verifies a MyPointProto message.
      * @param message Plain object to verify
      * @returns `null` if valid, otherwise the reason why it is not
      */
-    public static verify(message: { [k: string]: any }): (string|null);
+    public static verify(message: { [k: string]: any }): (string | null);
 
     /**
      * Creates a MyPointProto message from a plain object. Also converts values to their respective internal types.
@@ -114,7 +115,7 @@ export interface IPlayerInfoProto {
     state: number;
 
     /** PlayerInfoProto tracks */
-    tracks?: (ITrack[]|null);
+    tracks?: (ITrack[] | null);
 }
 
 /** Represents a PlayerInfoProto. */
@@ -175,7 +176,7 @@ export class PlayerInfoProto implements IPlayerInfoProto {
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): PlayerInfoProto;
+    public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): PlayerInfoProto;
 
     /**
      * Decodes a PlayerInfoProto message from the specified reader or buffer, length delimited.
@@ -184,14 +185,14 @@ export class PlayerInfoProto implements IPlayerInfoProto {
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): PlayerInfoProto;
+    public static decodeDelimited(reader: ($protobuf.Reader | Uint8Array)): PlayerInfoProto;
 
     /**
      * Verifies a PlayerInfoProto message.
      * @param message Plain object to verify
      * @returns `null` if valid, otherwise the reason why it is not
      */
-    public static verify(message: { [k: string]: any }): (string|null);
+    public static verify(message: { [k: string]: any }): (string | null);
 
     /**
      * Creates a PlayerInfoProto message from a plain object. Also converts values to their respective internal types.
@@ -277,7 +278,7 @@ export class Track implements ITrack {
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): Track;
+    public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): Track;
 
     /**
      * Decodes a Track message from the specified reader or buffer, length delimited.
@@ -286,14 +287,14 @@ export class Track implements ITrack {
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): Track;
+    public static decodeDelimited(reader: ($protobuf.Reader | Uint8Array)): Track;
 
     /**
      * Verifies a Track message.
      * @param message Plain object to verify
      * @returns `null` if valid, otherwise the reason why it is not
      */
-    public static verify(message: { [k: string]: any }): (string|null);
+    public static verify(message: { [k: string]: any }): (string | null);
 
     /**
      * Creates a Track message from a plain object. Also converts values to their respective internal types.
@@ -373,7 +374,7 @@ export class LeaderBoardItem implements ILeaderBoardItem {
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): LeaderBoardItem;
+    public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): LeaderBoardItem;
 
     /**
      * Decodes a LeaderBoardItem message from the specified reader or buffer, length delimited.
@@ -382,14 +383,14 @@ export class LeaderBoardItem implements ILeaderBoardItem {
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): LeaderBoardItem;
+    public static decodeDelimited(reader: ($protobuf.Reader | Uint8Array)): LeaderBoardItem;
 
     /**
      * Verifies a LeaderBoardItem message.
      * @param message Plain object to verify
      * @returns `null` if valid, otherwise the reason why it is not
      */
-    public static verify(message: { [k: string]: any }): (string|null);
+    public static verify(message: { [k: string]: any }): (string | null);
 
     /**
      * Creates a LeaderBoardItem message from a plain object. Also converts values to their respective internal types.
@@ -420,13 +421,13 @@ export interface IPayLoad {
     mapString: Uint8Array;
 
     /** PayLoad players */
-    players?: (IPlayerInfoProto[]|null);
+    players?: (IPlayerInfoProto[] | null);
 
     /** PayLoad leftTop */
     leftTop: IMyPointProto;
 
     /** PayLoad leaderBoard */
-    leaderBoard?: (ILeaderBoardItem[]|null);
+    leaderBoard?: (ILeaderBoardItem[] | null);
 
     /** PayLoad soundFx */
     soundFx: number;
@@ -487,7 +488,7 @@ export class PayLoad implements IPayLoad {
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): PayLoad;
+    public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): PayLoad;
 
     /**
      * Decodes a PayLoad message from the specified reader or buffer, length delimited.
@@ -496,14 +497,14 @@ export class PayLoad implements IPayLoad {
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): PayLoad;
+    public static decodeDelimited(reader: ($protobuf.Reader | Uint8Array)): PayLoad;
 
     /**
      * Verifies a PayLoad message.
      * @param message Plain object to verify
      * @returns `null` if valid, otherwise the reason why it is not
      */
-    public static verify(message: { [k: string]: any }): (string|null);
+    public static verify(message: { [k: string]: any }): (string | null);
 
     /**
      * Creates a PayLoad message from a plain object. Also converts values to their respective internal types.
