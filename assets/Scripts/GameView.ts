@@ -405,11 +405,11 @@ export default class GameView extends cc.Component {
         }
     }
 
-    onWorldChange(deltaTime: number): void {
-        let currentTime: number = Date.now();// fixme
+    async onWorldChange(deltaTime: number): Promise<void> {
+        let currentTime: number = Date.now();
         this.adjustDuration(deltaTime);
-        this.updateTiles();
-        this.updateHeads();
+        await this.updateTiles();
+        await this.updateHeads();
         this.updateLeaderBoard();
         this.playSound();
         this.updateRebornAsk();
