@@ -1,9 +1,9 @@
-import { PlayerInfo, MyPoint, PayLoadJson } from './PlayerInfo';
 import { IClientAdapter } from './IAdapter';
 import CameraController from './CameraController';
 import { GameRoom } from './GameRoom';
 import tinycolor = require('../Lib/tinycolor.js');
 import { PayLoad, MyPointProto, IMyPointProto, IPlayerInfoProto, ILeaderBoardItem } from './PayLoadProtobuf';
+import { ColorUtil } from './Config';
 
 const { ccclass, property } = cc._decorator;
 
@@ -110,6 +110,12 @@ export default class GameView extends cc.Component {
     @property(cc.AudioClip)
     backgroundMusic: cc.AudioClip = null;
 
+    @property(cc.Node)
+    shareBoard: cc.Node = null;
+
+    @property(cc.Node)
+    exitBoard: cc.Node = null;
+
     viewWidth: number;
     viewHeight: number;
 
@@ -142,6 +148,9 @@ export default class GameView extends cc.Component {
     firstFlag: boolean = true;
 
     asking: boolean = false;
+    myLastPercentage: number = 0;
+
+    hasReborn: boolean = false;
 
     timer: any;
 
@@ -247,7 +256,6 @@ export default class GameView extends cc.Component {
         for (let i: number = 0; i < this.headRoot.childrenCount; i++) {
             this.headRoot.children[i].color = this.darkColorList[this.players[i].playerID];
         }
-        this.haloNode.color = this.lightColorList[this.myPlayerID];
     }
 
 
@@ -272,6 +280,7 @@ export default class GameView extends cc.Component {
                 this.headRoot.children[i].color = this.darkColorList[info.playerID];
 
                 if (info.playerID === this.myPlayerID) {
+                    this.haloNode.color = this.lightColorList[this.myPlayerID];
                     if (this.foregroundNode !== null) {
                         this.foregroundNode.destroy();
                         this.foregroundNode = null;
@@ -391,18 +400,47 @@ export default class GameView extends cc.Component {
                 cc.scaleTo(duration, scaleRatio, 1).easing(cc.easeOut(1))
             ));
         }
+
+        // update myLastPercentage
+        for (let i: number = 0; i < this.leaderBoard.length; i++) {
+            if (this.leaderBoard[i][0] === this.myPlayerID) {
+                this.myLastPercentage = this.leaderBoard[i][1];
+            }
+        }
     }
 
     updateRebornAsk(): void {
         if (!this.asking && !GameRoom.isAlive(this.players[this.myPlayerID - 1])) {
             this.asking = true;
-            console.log('will you reborn?');
 
-            setTimeout(() => {
-                console.log('yes, i will!');
-                this.clientAdapter.rebornPlayer(this.myPlayerID);
-            }, 3000);
+            // send player score to sub domain
+            wx.postMessage({
+                command: 'UpdatePlayerScore',
+                param1: this.myLastPercentage,
+                param2: this.players[this.myPlayerID - 1].nKill
+            });
+
+            // show corresponding board
+            if (this.hasReborn) {
+                this.exitBoard.active = true;
+            } else {
+                this.shareBoard.active = true;
+            }
         }
+    }
+
+    onShareButtonClick(): void {
+        cc.loader.loadRes('Pictures/share', cc.SpriteFrame, (err, data) => {
+            wx.shareAppMessage({
+                title: '你能圈住多大的地盘呢？',
+                imageUrl: data.url,
+                success: res => {
+                    this.exitBoard.active = false;
+                    this.hasReborn = true;
+                    this.clientAdapter.rebornPlayer(this.myPlayerID);
+                }
+            });
+        });
     }
 
     async onWorldChange(deltaTime: number): Promise<void> {
@@ -483,10 +521,24 @@ export default class GameView extends cc.Component {
 
         // replace scale halo by using widget
 
-        this.foregroundNode.getChildByName('LoadLabel').color = this.haloNode.color = this.lightColorList[GameRoom.randInt(1, 14)];
+        [this.foregroundNode.getChildByName('LoadLabel').color, this.haloNode.color]
+            = ColorUtil.getInstance().getRandomColor().slice(0, 2);
 
         // play bgm
         cc.audioEngine.play(this.backgroundMusic, true, 1);
+
+        // buttons on boards
+        this.shareBoard.getChildByName('ShareButton').on('click', () => { this.onShareButtonClick(); }, this);
+        this.shareBoard.getChildByName('ExitButton').on('click', () => { cc.director.loadScene('Splash'); }, this);
+        this.exitBoard.getChildByName('IKnowButton').on('click', () => { cc.director.loadScene('Splash'); }, this);
+        this.exitBoard.getChildByName('ExitButton').on('click', () => { cc.director.loadScene('Splash'); }, this);
+
+        this.shareBoard.color = this.lightColorList[this.myPlayerID];
+        this.exitBoard.color = this.lightColorList[this.myPlayerID];
+        this.shareBoard.getChildByName('ShareButton').color = this.darkColorList[this.myPlayerID];
+        this.shareBoard.getChildByName('ExitButton').color = this.darkColorList[this.myPlayerID];
+        this.exitBoard.getChildByName('IKnowButton').color = this.darkColorList[this.myPlayerID];
+        this.exitBoard.getChildByName('ExitButton').color = this.darkColorList[this.myPlayerID];
     }
 
     /**

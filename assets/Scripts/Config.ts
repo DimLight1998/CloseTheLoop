@@ -3,6 +3,21 @@ const { ccclass, property } = cc._decorator;
 
 const TileSize: number = 40;
 
+export class SingleMultipleSelector {
+    private static isSingleMode: boolean = true;
+    public static setSingle(): void {
+        SingleMultipleSelector.isSingleMode = true;
+    }
+
+    public static setMultiple(): void {
+        SingleMultipleSelector.isSingleMode = false;
+    }
+
+    public static isSingle(): boolean {
+        return SingleMultipleSelector.isSingleMode;
+    }
+}
+
 export function GetTileSize(): number { return TileSize; }
 
 export class ColorUtil {
@@ -53,5 +68,21 @@ export class ColorUtil {
     public getRandomColor(): [cc.Color, cc.Color, cc.Color] {
         let i: number = Math.floor(Math.random() * ColorUtil.colorList.length);
         return [ColorUtil.brightColors[i], ColorUtil.darkColors[i], ColorUtil.darkerColors[i]];
+    }
+}
+
+export class ExitStatus {
+    private static isNormalExit: boolean = false;
+
+    static setToNormal(): void {
+        ExitStatus.isNormalExit = true;
+    }
+
+    static setToExceptional(): void {
+        ExitStatus.isNormalExit = false;
+    }
+
+    static isNormal(): boolean {
+        return ExitStatus.isNormalExit;
     }
 }

@@ -1,4 +1,4 @@
-import { ColorUtil } from './Config';
+import { ColorUtil, SingleMultipleSelector } from './Config';
 const { ccclass, property } = cc._decorator;
 
 @ccclass
@@ -33,8 +33,14 @@ export default class SplashSceneCtrl extends cc.Component {
         this.helpButton.node.color = this.darkColor;
         this.leaderBoardButton.node.color = this.darkColor;
 
-        // todo add triggers
-        this.singlePlayerButton.node.on('click', () => cc.director.loadScene('Gaming'), this);
+        this.singlePlayerButton.node.on('click', () => {
+            SingleMultipleSelector.setSingle();
+            cc.director.loadScene('Gaming');
+        }, this);
+        this.multiPlayerButton.node.on('click', () => {
+            SingleMultipleSelector.setMultiple();
+            cc.director.loadScene('Gaming');
+        }, this);
         this.helpButton.node.on('click', () => cc.director.loadScene('Help'), this);
         this.leaderBoardButton.node.on('click', () => { this.enterLeaderBoard(); }, this);
     }
@@ -43,15 +49,6 @@ export default class SplashSceneCtrl extends cc.Component {
         wx.postMessage({
             command: 'DisplayFriendsScore'
         });
-
-        // todo this code is for test
-        // wx.setUserCloudStorage({
-        //     kVDataList: [
-        //         { key: 'score', value: JSON.stringify({ percent: '85%', date: Date.now() }) }
-        //     ],
-        //     success: () => { console.log('good'); }
-        // });
-
 
         cc.director.loadScene('LeaderBoard');
     }

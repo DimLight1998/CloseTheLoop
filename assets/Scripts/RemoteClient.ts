@@ -1,6 +1,7 @@
 import { IClientAdapter } from './IAdapter';
 import GameView from './GameView';
 import { PayLoad } from './PayLoadProtobuf';
+import { ExitStatus } from './Config';
 
 export class RemoteClient implements IClientAdapter {
     webSocket: WebSocket = null;
@@ -17,7 +18,7 @@ export class RemoteClient implements IClientAdapter {
     onRegisterSuccess: (playerId: number, roomId: number) => void;
 
     constructor(view: GameView, hostname: string, port: number, openCallback: () => void, closeCallback: () => void) {
-        this.webSocket = new WebSocket(`ws://${hostname}:${port}`);
+        this.webSocket = new WebSocket(`wss://${hostname}:${port}`);
         this.webSocket.binaryType = 'arraybuffer';
         this.webSocket.onopen = openCallback;
         this.webSocket.onerror = (event: Event) => {
@@ -30,6 +31,7 @@ export class RemoteClient implements IClientAdapter {
         this.view.setClientAdapter(this);
 
         this.webSocket.onmessage = this.handleIncomingMessage.bind(this);
+        ExitStatus.setToExceptional();
     }
 
     changeDirection(playerID: number, direction: number): void {// @bug
@@ -88,6 +90,7 @@ export class RemoteClient implements IClientAdapter {
     }
 
     leaveRoom(playerId: number): void {
+        ExitStatus.setToNormal();
         this.webSocket.close();
     }
 }
