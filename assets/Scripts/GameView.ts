@@ -436,17 +436,20 @@ export default class GameView extends cc.Component {
     }
 
     onShareButtonClick(): void {
-        cc.loader.loadRes('Pictures/share', cc.SpriteFrame, (err, data) => {
+        cc.loader.loadRes('share', cc.SpriteFrame, (err, data) => {
             wx.shareAppMessage({
                 title: '你能圈住多大的地盘呢？',
-                imageUrl: data.url,
-                success: res => {
-                    this.exitBoard.active = false;
-                    this.hasReborn = true;
-                    this.clientAdapter.rebornPlayer(this.myPlayerID);
-                }
+                imageUrl: data._textureFilename,
             });
         });
+        this.shareBoard.getChildByName('ShareButton').getChildByName('Label').getComponent<cc.Label>(cc.Label).string = '复活';
+        this.shareBoard.getChildByName('ShareButton').off('click', this.onShareButtonClick, this);
+        this.shareBoard.getChildByName('ShareButton').on('click', () => {
+            this.shareBoard.active = false;
+            this.hasReborn = true;
+            this.clientAdapter.rebornPlayer(this.myPlayerID);
+        }, this);
+        this.shareBoard.getChildByName('ExitButton').active = false;
     }
 
     async onWorldChange(deltaTime: number): Promise<void> {
@@ -534,7 +537,7 @@ export default class GameView extends cc.Component {
         cc.audioEngine.play(this.backgroundMusic, true, 1);
 
         // buttons on boards
-        this.shareBoard.getChildByName('ShareButton').on('click', () => { this.onShareButtonClick(); }, this);
+        this.shareBoard.getChildByName('ShareButton').on('click', this.onShareButtonClick, this);
         this.shareBoard.getChildByName('ExitButton').on('click',
             () => {
                 cc.director.loadScene('Splash');
