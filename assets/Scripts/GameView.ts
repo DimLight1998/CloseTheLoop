@@ -423,8 +423,14 @@ export default class GameView extends cc.Component {
             // show corresponding board
             if (this.hasReborn) {
                 this.exitBoard.active = true;
+                this.exitBoard.color = this.lightColorList[this.myPlayerID];
+                this.exitBoard.getChildByName('IKnowButton').color = this.darkColorList[this.myPlayerID];
+                this.exitBoard.getChildByName('ExitButton').color = this.darkColorList[this.myPlayerID];
             } else {
                 this.shareBoard.active = true;
+                this.shareBoard.color = this.lightColorList[this.myPlayerID];
+                this.shareBoard.getChildByName('ShareButton').color = this.darkColorList[this.myPlayerID];
+                this.shareBoard.getChildByName('ExitButton').color = this.darkColorList[this.myPlayerID];
             }
         }
     }
@@ -529,16 +535,21 @@ export default class GameView extends cc.Component {
 
         // buttons on boards
         this.shareBoard.getChildByName('ShareButton').on('click', () => { this.onShareButtonClick(); }, this);
-        this.shareBoard.getChildByName('ExitButton').on('click', () => { cc.director.loadScene('Splash'); }, this);
-        this.exitBoard.getChildByName('IKnowButton').on('click', () => { cc.director.loadScene('Splash'); }, this);
-        this.exitBoard.getChildByName('ExitButton').on('click', () => { cc.director.loadScene('Splash'); }, this);
-
-        this.shareBoard.color = this.lightColorList[this.myPlayerID];
-        this.exitBoard.color = this.lightColorList[this.myPlayerID];
-        this.shareBoard.getChildByName('ShareButton').color = this.darkColorList[this.myPlayerID];
-        this.shareBoard.getChildByName('ExitButton').color = this.darkColorList[this.myPlayerID];
-        this.exitBoard.getChildByName('IKnowButton').color = this.darkColorList[this.myPlayerID];
-        this.exitBoard.getChildByName('ExitButton').color = this.darkColorList[this.myPlayerID];
+        this.shareBoard.getChildByName('ExitButton').on('click',
+            () => {
+                cc.director.loadScene('Splash');
+                this.clientAdapter.leaveRoom(this.myPlayerID);
+            }, this);
+        this.exitBoard.getChildByName('IKnowButton').on('click',
+            () => {
+                cc.director.loadScene('Splash');
+                this.clientAdapter.leaveRoom(this.myPlayerID);
+            }, this);
+        this.exitBoard.getChildByName('ExitButton').on('click',
+            () => {
+                cc.director.loadScene('Splash');
+                this.clientAdapter.leaveRoom(this.myPlayerID);
+            }, this);
     }
 
     /**
