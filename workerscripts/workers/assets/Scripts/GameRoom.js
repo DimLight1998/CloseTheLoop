@@ -576,7 +576,7 @@ class GameRoom {
             }
         }
         this.payload.soundFx = this.soundFxs[playerID2Track];
-        return PayLoadProtobuf_1.PayLoad.encode(this.payload).finish();
+        return this.payload;
     }
     /**
      * Clear player's track map and/or color map.

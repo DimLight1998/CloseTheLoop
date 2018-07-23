@@ -18,13 +18,12 @@ export default class WxGameController extends cc.Component {
             let roomId: number = message.roomId;
             this.client.onRegisterSuccess(playerId, roomId);
         } else if (command === 'WORLD') {
-            let payload: Uint8Array = message.payload;
-            this.client.pushNewWorldResponse(payload);
+            let payload: ArrayBuffer = message.payload;
+            this.client.pushNewWorldResponse(new Uint8Array(payload));
         }
     }
 
     onEnable(): void {
-        console.log('creating worker');// fixme
         this.worker = wx.createWorker('workers/workerscripts/WxRoomManager.js');
         this.worker.onMessage(this.handleIncomingMessage.bind(this));
         this.client = new WxClient(this, this.view);

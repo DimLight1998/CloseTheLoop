@@ -43,7 +43,7 @@ export class WxServer implements IServerAdapter {
             const payload: PayLoad = this.room.getListenerViewProtobuf(listener.playerID2Track, listener.viewNRows, listener.viewNCols);
             worker.postMessage({
                 command: 'WORLD',
-                payload: PayLoad.encode(payload).finish()
+                payload: PayLoad.encode(payload).finish().buffer
             });
         }
     }

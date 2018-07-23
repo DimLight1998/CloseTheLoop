@@ -6,8 +6,6 @@ export class WxRoomManager implements IRoomMangerAdapter {
     server: WxServer = null;
 
     constructor() {
-        console.log('worker start');
-
         this.server = new WxServer();
 
         worker.onMessage(this.handleIncomingMessage.bind(this));
@@ -76,7 +74,7 @@ export class WxRoomManager implements IRoomMangerAdapter {
                 break;
             }
             default: {
-                console.log('unknow command ' + command);
+                console.log('unknown command ' + command);
             }
         }
     }

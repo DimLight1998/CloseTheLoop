@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const GameRoom_1 = require("../assets/Scripts/GameRoom");
+const PayLoadProtobuf_1 = require("../assets/Scripts/PayLoadProtobuf");
 class WechatListener {
 }
 exports.WechatListener = WechatListener;
@@ -27,7 +28,7 @@ class WxServer {
             const payload = this.room.getListenerViewProtobuf(listener.playerID2Track, listener.viewNRows, listener.viewNCols);
             worker.postMessage({
                 command: 'WORLD',
-                payload
+                payload: PayLoadProtobuf_1.PayLoad.encode(payload).finish().buffer
             });
         }
     }
