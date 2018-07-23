@@ -31,10 +31,11 @@ export class LocalServer implements IServerAdapter {
     handleRegisterToThisRoom(): number {
         return this.room.replaceAIWithPlayer();
     }
-    async dispatchNewWorld(): Promise<void> {
+    dispatchNewWorld(): void {
+        this.room.initPlayerInfoProto();
         for (let listener of this.listeners) {
-            const obj: PayLoadJson = this.room.getListenerView(listener.playerID2Track, listener.viewNRows, listener.viewNCols);
-            await listener.client.pushNewWorldResponse(JSON.stringify(obj));
+            const payload: Uint8Array = this.room.getListenerViewProtobuf(listener.playerID2Track, listener.viewNRows, listener.viewNCols);
+            listener.client.pushNewWorldResponse(payload);
         }
     }
 

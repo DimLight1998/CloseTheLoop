@@ -4,6 +4,7 @@ import { ServerPlayerInfo } from './ServerPlayerInfo';
 import { GameAI } from './GameAI';
 import { MyPoint, PayLoadJson, PlayerInfo } from './PlayerInfo';
 import { IServerAdapter } from './IAdapter';
+import { PayLoad, MyPointProto, PlayerInfoProto, Track, LeaderBoardItem, IPlayerInfoProto } from './PayLoadProtobuf';
 
 export class GameRoom {
     static directions: MyPoint[] = [
@@ -34,6 +35,7 @@ export class GameRoom {
 
     mapStatus: number[][] = null;
     maxT: number;
+    payload: PayLoad;
 
     constructor(nRows: number, nCols: number, playerNum: number) {
         this.nRows = nRows;
@@ -50,6 +52,16 @@ export class GameRoom {
 
         this.maxT = 0;
         this.soundFxs = Array(this.playerNum + 1).fill(0);
+
+        this.payload = new PayLoad();
+        this.payload.players = [];
+        this.payload.leaderBoard = [];
+        for (let i: number = 0; i < this.playerNum; i++) {
+            this.payload.players.push(new PlayerInfoProto());
+            this.payload.players[i].headPos = new MyPointProto();
+            this.payload.leaderBoard.push(new LeaderBoardItem());
+        }
+        this.payload.leftTop = new MyPointProto();
     }
 
     static create2DArray(nRows: number, nCols: number): number[][] {
@@ -75,7 +87,7 @@ export class GameRoom {
         return true;
     }
 
-    static isAlive(info: PlayerInfo): boolean {
+    static isAlive(info: PlayerInfo | IPlayerInfoProto): boolean {
         return info.state === 0 || info.state === 3;
     }
 
@@ -157,7 +169,6 @@ export class GameRoom {
                 aiInstance: null,
                 headPos: null, // do it later
                 headDirection: 0, // up
-                nBlocks: 0, // do it later
                 nKill: 0,
                 state: 2, // 0 活着，1正在爆炸，2死了
                 nextDirection: 0, // same as headDirection
@@ -321,7 +332,7 @@ export class GameRoom {
         return false;
     }
 
-    async fillPlayer(playerId: number): Promise<boolean> {
+    fillPlayer(playerId: number): boolean {
         // let cur: number = Date.now();
         let success: boolean = false;
 
@@ -330,7 +341,7 @@ export class GameRoom {
         for (let r: number = 0; r < this.nRows; r++) {
             for (let c: number = 0; c < this.nCols; c++) {
                 if (this.mapStatus[r][c] !== this.maxT && this.colorMap[r][c] !== playerId && this.trackMap[r][c] !== playerId) {
-                    success = (await this.floodFill(r, c, playerId)) || success;
+                    success = this.floodFill(r, c, playerId) || success;
                 }
             }
         }
@@ -351,7 +362,7 @@ export class GameRoom {
         // console.log('bfs costs ' + (Date.now() - cur) + 'ms');
     }
 
-    async updateColorFilling(): Promise<void> {
+    updateColorFilling(): void {
         /**
          * This function will consider color and track with id `walledId` as wall.
          */
@@ -363,7 +374,7 @@ export class GameRoom {
 
         // for elements still in the potential list, fill for them
         for (let playerId of this.potentialFillList) {
-            let success: boolean = await this.fillPlayer(playerId);
+            let success: boolean = this.fillPlayer(playerId);
             if (success) {
                 this.soundFxs[playerId] = Math.max(1, this.soundFxs[playerId]);
             }
@@ -376,7 +387,6 @@ export class GameRoom {
             info.headPos = this.randomSpawnNewPlayer(playerID);
             if (info.headPos !== null) {
                 info.state = 3;
-                info.nBlocks = 0;
                 info.nKill = 0;
                 info.aiInstance.init();
             }
@@ -401,21 +411,17 @@ export class GameRoom {
             this.leaderBoard.push([i, count[i]]);
         }
         this.leaderBoard.sort(([, score1], [, score2]) => score2 - score1);
-
-        for (let player of this.serverPlayerInfos) {
-            player.nBlocks = count[player.playerID];
-        }
     }
 
-    async updateAIs(): Promise<void> {
+    updateAIs(): void {
         for (const player of this.serverPlayerInfos) {
             if (GameRoom.isAlive(player)) {
-                await player.aiInstance.updateAI();
+                player.aiInstance.updateAI();
             }
         }
         for (const player of this.serverPlayerInfos) {
             if (GameRoom.isAlive(player)) {
-                await player.aiInstance.lateUpdateAI();
+                player.aiInstance.lateUpdateAI();
             }
         }
     }
@@ -426,7 +432,7 @@ export class GameRoom {
         }
     }
 
-    async updateHumanReborn(): Promise<void> {
+    updateHumanReborn(): void {
         const MaxChoice: number = 10;
         if (this.rebornHumanList.length === 0) {
             return;
@@ -460,25 +466,25 @@ export class GameRoom {
     /**
      * update all players' position logically. if it has a server adapter, dispatch the world to other clients.
      */
-    async updateRound(): Promise<void> {
+    updateRound(): void {
         this.lastUpdateTime = Date.now();
         this.playersToClear = [];
         this.potentialFillList = [];
         this.initSounds();
         this.updateDyingPlayers();
-        await this.updateHumanReborn();
         this.updatePlayerPos();
+        this.updateHumanReborn();
         this.updatePlayerReborn();
         this.updateTrackCutting();
         this.updatePlayerOverlapping();
-        await this.updateColorFilling();
-        await this.clearPlayers();
+        this.updateColorFilling();
+        this.clearPlayers();
         this.updateDeadPlayer();
         this.updateLeaderBoard();
         if (this.serverAdapter !== null) {
             this.serverAdapter.dispatchNewWorld();
         }
-        await this.updateAIs();
+        this.updateAIs();
         let currentTime: number = Date.now();
         let duration: number = this.lastUpdateTime + GameRoom.roundDuration - currentTime;
         if (duration < 0) {
@@ -572,7 +578,6 @@ export class GameRoom {
                 playerID: info.playerID,
                 headPos: info.headPos,
                 headDirection: info.headDirection,
-                nBlocks: info.nBlocks,
                 state: info.state,
                 tracks: info.tracks,
                 nKill: info.nKill
@@ -594,6 +599,57 @@ export class GameRoom {
             leaderBoard: this.leaderBoard,
             soundFx: this.soundFxs[playerID2Track]
         };
+    }
+
+    initPlayerInfoProto(): void {
+        for (let i: number = 0; i < this.playerNum; i++) {
+            this.payload.players[i].playerID = this.serverPlayerInfos[i].playerID;
+            this.payload.players[i].headPos.x = this.serverPlayerInfos[i].headPos.x;
+            this.payload.players[i].headPos.y = this.serverPlayerInfos[i].headPos.y;
+            this.payload.players[i].headDirection = this.serverPlayerInfos[i].headDirection;
+            this.payload.players[i].nKill = this.serverPlayerInfos[i].nKill;
+            this.payload.players[i].state = this.serverPlayerInfos[i].state;
+            this.payload.players[i].tracks = [];
+            for (let [x, y, d] of this.serverPlayerInfos[i].tracks) {
+                this.payload.players[i].tracks.push(new Track({ x: x, y: y, d: d }));
+            }
+            this.payload.leaderBoard[i].id = this.leaderBoard[i][0];
+            this.payload.leaderBoard[i].ratio = this.leaderBoard[i][1];
+        }
+    }
+
+    getListenerViewProtobuf(playerID2Track: number, viewNRows: number, viewNCols: number): Uint8Array {
+
+        const info: ServerPlayerInfo = this.serverPlayerInfos[playerID2Track - 1];
+        this.payload.leftTop.x = info.headPos.x - Math.floor(viewNRows / 2);
+        this.payload.leftTop.y = info.headPos.y - Math.floor(viewNCols / 2);
+
+        const [x1, x2, y1, y2]: [number, number, number, number]
+            = [this.payload.leftTop.x, this.payload.leftTop.x + viewNRows - 1,
+            this.payload.leftTop.y, this.payload.leftTop.y + viewNCols - 1];
+
+        this.payload.mapString = new Uint8Array(new ArrayBuffer(viewNRows * viewNCols));
+        let cnt: number = 0;
+        for (let r: number = x1; r <= x2; r++) {
+            for (let c: number = y1; c <= y2; c++) {
+                let color: number = 0;
+                let track: number = 0;
+                if (this.atBorder(r, c)) { // wall
+                    color = 15;
+                    track = 0;
+                } else if (this.outOfRange(r, c)) {
+                    color = track = 0;
+                } else {
+                    color = this.colorMap[r][c];
+                    track = this.trackMap[r][c];
+                }
+                // tslint:disable-next-line:no-bitwise
+                this.payload.mapString[cnt++] = (track << 4 | color);// low bit for color
+            }
+        }
+        this.payload.soundFx = this.soundFxs[playerID2Track];
+
+        return PayLoad.encode(this.payload).finish();
     }
 
     /**

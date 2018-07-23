@@ -1,8 +1,8 @@
-import { PlayerInfo, MyPoint, PayLoadJson } from './PlayerInfo';
 import { IClientAdapter } from './IAdapter';
 import CameraController from './CameraController';
 import { GameRoom } from './GameRoom';
 import tinycolor = require('../Lib/tinycolor.js');
+import { PayLoad, MyPointProto, IMyPointProto, IPlayerInfoProto, ILeaderBoardItem } from './PayLoadProtobuf';
 import { ColorUtil } from './Config';
 
 const { ccclass, property } = cc._decorator;
@@ -128,14 +128,14 @@ export default class GameView extends cc.Component {
 
     colorMap: number[][] = null;
     trackMap: number[][] = null;
-    players: PlayerInfo[] = [];
+    players: IPlayerInfoProto[] = [];
 
     oldColorMap: number[][] = null;
-    leaderBoard: [number, number][] = [];
+    leaderBoard: ILeaderBoardItem[] = [];
 
     myPlayerID: number;
     myRoomID: number;
-    leftTop: MyPoint;
+    leftTop: IMyPointProto;
 
     leaderBoardBars: cc.Node[] = [];
     leaderBoardDetails: cc.Node[] = [];
@@ -145,14 +145,22 @@ export default class GameView extends cc.Component {
     // which sound to play this round
     roundSoundFx: number;
 
-    timeLeft: number;
-
     firstFlag: boolean = true;
 
     asking: boolean = false;
     myLastPercentage: number = 0;
 
     hasReborn: boolean = false;
+
+    timer: any;
+
+    spriteWidth: number;
+    spriteHeight: number;
+
+    headSpeedX: number;
+    headSpeedY: number;
+
+    timeLeft: number;
 
     public setClientAdapter(adapter: IClientAdapter): void {
         this.clientAdapter = adapter;
@@ -170,7 +178,7 @@ export default class GameView extends cc.Component {
     /**
      * update the view from given information.
      */
-    public setLeftTop(newLeftTop: MyPoint, mapString: string): void {
+    public setLeftTop(newLeftTop: IMyPointProto, mapString: Uint8Array): void {
         let cnt: number = 0;
         this.colorTiles = [];
         this.trackTiles = [];
@@ -185,7 +193,7 @@ export default class GameView extends cc.Component {
             for (let j: number = 0; j < this.nCols; j++) {
                 this.colorTiles[newLeftTop.x + i][newLeftTop.y + j] = this.colorRoot.children[cnt];
                 this.trackTiles[newLeftTop.x + i][newLeftTop.y + j] = this.trackRoot.children[cnt];
-                const charCode: number = mapString.charCodeAt(cnt);
+                const charCode: number = mapString[cnt];
                 // tslint:disable-next-line:no-bitwise
                 this.colorMap[newLeftTop.x + i][newLeftTop.y + j] = charCode & ((1 << 4) - 1);
                 // tslint:disable-next-line:no-bitwise
@@ -235,9 +243,7 @@ export default class GameView extends cc.Component {
      * Get location on the view for a given logical coordinate.
      */
     getRowColPosition(row: number, col: number): cc.Vec2 {
-        const spriteWidth: number = this.colorRoot.children[0].width;
-        const spriteHeight: number = this.colorRoot.children[0].height;
-        return cc.v2(spriteWidth * col, -spriteHeight * row);
+        return cc.v2(this.spriteWidth * col, -this.spriteHeight * row);
     }
 
     updateHeadsFirstTime(): void {
@@ -249,8 +255,6 @@ export default class GameView extends cc.Component {
         }
         for (let i: number = 0; i < this.headRoot.childrenCount; i++) {
             this.headRoot.children[i].color = this.darkColorList[this.players[i].playerID];
-            const pos: cc.Vec2 = this.getRowColPosition(this.players[i].headPos.x, this.players[i].headPos.y);
-            this.headRoot.children[i].position = pos;
         }
     }
 
@@ -262,9 +266,14 @@ export default class GameView extends cc.Component {
         }
 
         for (let i: number = 0; i < this.players.length; i++) {
-            const info: PlayerInfo = this.players[i];
+            const info: IPlayerInfoProto = this.players[i];
 
-            if (info.state === 3) {
+            let ix: number, iy: number;
+            if (info.state === 0) {
+                ix = info.headPos.x - GameRoom.directions[info.headDirection].x;
+                iy = info.headPos.y - GameRoom.directions[info.headDirection].y;
+                this.headRoot.children[i].position = this.getRowColPosition(ix, iy);
+            } else if (info.state === 3) {
                 const pos: cc.Vec2 = this.getRowColPosition(info.headPos.x, info.headPos.y);
                 this.headRoot.children[i].position = pos;
 
@@ -296,9 +305,9 @@ export default class GameView extends cc.Component {
             }
 
             for (let t of info.tracks) {
-                if (!this.outOfView(t[0], t[1])) {
-                    this.trackTiles[t[0]][t[1]].getComponent(cc.Sprite).spriteFrame = this.triangleFrames[t[2]];
-                    this.trackTiles[t[0]][t[1]].opacity = this.angleOpacity;
+                if (!this.outOfView(t.x, t.y)) {
+                    this.trackTiles[t.x][t.y].getComponent(cc.Sprite).spriteFrame = this.triangleFrames[t.d];
+                    this.trackTiles[t.x][t.y].opacity = this.angleOpacity;
                 }
             }
         }
@@ -308,7 +317,7 @@ export default class GameView extends cc.Component {
         this.clientAdapter.requestNewWorld(Date.now());
     }
 
-    public refreshData(info: PayLoadJson, deltaTime: number): void {
+    public refreshData(info: PayLoad, deltaTime: number): void {
         this.setLeftTop(info.leftTop, info.mapString);
         this.players = info.players;
         this.leaderBoard = info.leaderBoard;
@@ -324,6 +333,8 @@ export default class GameView extends cc.Component {
                 this.nextDuration -= this.timeEpsilon;
             }
         }
+        this.headSpeedX = this.spriteWidth * 1000 / (this.nextDuration + 0.1);
+        this.headSpeedY = this.spriteHeight * 1000 / (this.nextDuration + 0.1);
         this.timeLeft = this.nextDuration / 1000;
     }
 
@@ -366,9 +377,10 @@ export default class GameView extends cc.Component {
     }
 
     updateLeaderBoard(): void {
-        let baseCount: number = this.leaderBoard[0][1];
+        let baseCount: number = this.leaderBoard[0].ratio;
         for (let i: number = 0; i < this.leaderBoardTopN; i++) {
-            let [leaderBoardPlayerId, leaderBoardPlayerCount]: [number, number] = this.leaderBoard[i];
+            let leaderBoardPlayerId: number = this.leaderBoard[i].id;
+            let leaderBoardPlayerCount: number = this.leaderBoard[i].ratio;
             let duration: number = this.nextDuration / 1000 * 2;
 
             // update leader board color
@@ -382,6 +394,7 @@ export default class GameView extends cc.Component {
                 `${(leaderBoardPlayerCount * 100).toFixed(1)}%  ${this.players[leaderBoardPlayerId - 1].nKill}杀`;
             label.node.color = this.darkerColorList[leaderBoardPlayerId];
 
+            this.leaderBoardBars[i].stopAllActions();
             this.leaderBoardBars[i].runAction(cc.spawn(
                 cc.tintTo(duration / 2, playerColor.getR(), playerColor.getG(), playerColor.getB()),
                 cc.scaleTo(duration, scaleRatio, 1).easing(cc.easeOut(1))
@@ -439,18 +452,22 @@ export default class GameView extends cc.Component {
         this.shareBoard.getChildByName('ExitButton').active = false;
     }
 
-    onWorldChange(deltaTime: number): void {
-        // let cur: number = Date.now();
+    async onWorldChange(deltaTime: number): Promise<void> {
+        let currentTime: number = Date.now();
         this.adjustDuration(deltaTime);
-        this.updateTiles();
-        this.updateHeads();
+        await this.updateTiles();
+        await this.updateHeads();
         this.updateLeaderBoard();
         this.playSound();
         this.updateRebornAsk();
         if (this.firstFlag) {
             this.firstFlag = false;
         }
-        // console.log('world change costs ' + (Date.now() - cur) + 'ms');
+        let duration: number = currentTime + this.nextDuration - Date.now();
+        if (duration < 0) {
+            duration = 0;
+        }
+        this.timer = setTimeout(this.fetchNewWorld.bind(this), duration);
     }
 
     playSound(): void {
@@ -496,6 +513,10 @@ export default class GameView extends cc.Component {
             this.colorRoot.addChild(cc.instantiate(this.spritePrefab));
             this.trackRoot.addChild(cc.instantiate(this.spritePrefab));
         }
+        if (this.colorRoot.childrenCount > 0) {
+            this.spriteWidth = this.colorRoot.children[0].width;
+            this.spriteHeight = this.colorRoot.children[0].height;
+        }
 
         for (let i: number = 0; i < this.leaderBoardTopN; i++) {
             this.leaderBoardRoot.addChild(cc.instantiate(this.leaderBoardPrefab));
@@ -538,23 +559,21 @@ export default class GameView extends cc.Component {
      * change all players' position based on the time.
      * if the map needs to be updated, update it.
      */
-    update(dt: number): void {
-        if (this.timeLeft < dt) {
-            this.timeLeft = dt;
+    update(_dt: number): void {
+        let dt: number = _dt;
+        if (dt > this.timeLeft) {
+            dt = this.timeLeft;
         }
-        const ratio: number = dt / this.timeLeft;
-        for (let i: number = 0; i < this.players.length; i++) {
-            const info: PlayerInfo = this.players[i];
-            if (info.state === 0) {
-                const playerNode: cc.Node = this.headRoot.children[i];
-                const targetPos: cc.Vec2 = this.getRowColPosition(info.headPos.x, info.headPos.y);
-                const deltaVector: cc.Vec2 = targetPos.sub(playerNode.position).mul(ratio);
-                playerNode.position = playerNode.position.add(deltaVector);
+        if (dt > 0) {
+            this.timeLeft -= dt;
+            for (let i: number = 0; i < this.players.length; i++) {
+                const info: IPlayerInfoProto = this.players[i];
+                if (info.state === 0) {// only state 0 is moving
+                    const playerNode: cc.Node = this.headRoot.children[i];
+                    playerNode.setPositionX(playerNode.x + GameRoom.directions[info.headDirection].y * this.headSpeedX * dt);
+                    playerNode.setPositionY(playerNode.y - GameRoom.directions[info.headDirection].x * this.headSpeedY * dt);
+                }
             }
-        }
-        this.timeLeft -= dt;
-        if (this.timeLeft <= 0) {
-            this.fetchNewWorld();
         }
     }
 }
