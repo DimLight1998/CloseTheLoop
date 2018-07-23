@@ -27,4 +27,16 @@ export default class LocalGameController extends cc.Component {
         this.roomManger.onlyServer.room.startNewGame();
         this.view.startGame();// view start listening
     }
+
+    onDestroy(): void {
+        if (this.roomManger !== null
+            && this.roomManger.onlyServer !== null
+            && this.roomManger.onlyServer.room !== null) {
+            let timer: number = this.roomManger.onlyServer.room.timer;
+            if (timer !== null) {
+                clearTimeout(timer);
+                this.roomManger.onlyServer.room.timer = null;
+            }
+        }
+    }
 }

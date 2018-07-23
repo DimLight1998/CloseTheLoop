@@ -152,7 +152,7 @@ export default class GameView extends cc.Component {
 
     hasReborn: boolean = false;
 
-    timer: any;
+    timer: any = null;
 
     spriteWidth: number;
     spriteHeight: number;
@@ -571,6 +571,13 @@ export default class GameView extends cc.Component {
                     playerNode.setPositionY(playerNode.y - GameRoom.directions[info.headDirection].x * this.headSpeedY * dt);
                 }
             }
+        }
+    }
+
+    onDestroy(): void {
+        if (this.timer !== null) {
+            clearTimeout(this.timer);
+            this.timer = null;
         }
     }
 }

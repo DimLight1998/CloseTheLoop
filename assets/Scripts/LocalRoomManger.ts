@@ -38,6 +38,5 @@ export class LocalRoomManger implements IRoomMangerAdapter {
         if (roomID !== 0) {
             console.log('impossible! disconnect room ID is ' + roomID);
         }
-        clearTimeout(this.onlyServer.room.timer);
     }
 }
