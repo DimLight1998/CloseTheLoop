@@ -73,4 +73,8 @@ export class LocalClient implements IClientAdapter {
     leaveRoom(playerId: number): void {
         this.ctrl.roomManger.handlePlayerDisconnect(playerId, 0);
     }
+
+    wxFireRoundStartEvent(): void {
+        // do nothing
+    }
 }

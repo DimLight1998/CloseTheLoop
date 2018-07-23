@@ -24,7 +24,6 @@ export default class LocalGameController extends cc.Component {
     onEnable(): void { // 就是你，负责开始整个单人游戏！
         this.client = new LocalClient(this, this.view);
         this.roomManger = new LocalRoomManger(this);
-        this.roomManger.onlyServer.room.startNewGame();
         this.view.startGame();// view start listening
     }
 

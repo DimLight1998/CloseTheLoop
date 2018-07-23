@@ -20,7 +20,7 @@
         "__id__": 66
       },
       {
-        "__id__": 68
+        "__id__": 69
       }
     ],
     "_tag": -1,
@@ -96,7 +96,7 @@
         "__id__": 65
       },
       {
-        "__id__": 70
+        "__id__": 71
       }
     ],
     "_prefab": null,
@@ -2415,7 +2415,7 @@
       "__id__": 66
     },
     "remoteGameNode": {
-      "__id__": 68
+      "__id__": 69
     }
   },
   {
@@ -2427,10 +2427,13 @@
     },
     "_children": [],
     "_tag": -1,
-    "_active": true,
+    "_active": false,
     "_components": [
       {
         "__id__": 67
+      },
+      {
+        "__id__": 68
       }
     ],
     "_prefab": null,
@@ -2477,10 +2480,22 @@
     "node": {
       "__id__": 66
     },
-    "_enabled": true,
+    "_enabled": false,
     "totalNRows": 80,
     "totalNCols": 80,
     "totalNPlayers": 13,
+    "view": {
+      "__id__": 10
+    }
+  },
+  {
+    "__type__": "4001dYhrh1By640NOw7xBC/",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 66
+    },
+    "_enabled": true,
     "view": {
       "__id__": 10
     }
@@ -2497,7 +2512,7 @@
     "_active": false,
     "_components": [
       {
-        "__id__": 69
+        "__id__": 70
       }
     ],
     "_prefab": null,
@@ -2542,7 +2557,7 @@
     "_name": "",
     "_objFlags": 0,
     "node": {
-      "__id__": 68
+      "__id__": 69
     },
     "_enabled": true,
     "view": {

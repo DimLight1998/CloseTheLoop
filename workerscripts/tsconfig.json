@@ -1,0 +1,13 @@
+{
+    "extends": "../tsconfig",
+    "compilerOptions": {
+        "outDir": "./workers",
+        "allowJs": true
+    },
+    "files": [
+        "WxRoomManager.ts",
+        "../index.d.ts",
+        "../assets/Scripts/PayLoadProtobuf.d.ts",
+        "../assets/Scripts/PayLoadProtobuf.js"
+    ]
+}

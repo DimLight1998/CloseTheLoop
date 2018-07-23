@@ -454,6 +454,7 @@ export default class GameView extends cc.Component {
 
     async onWorldChange(deltaTime: number): Promise<void> {
         let currentTime: number = Date.now();
+        this.clientAdapter.wxFireRoundStartEvent();// call server to complete the next turn
         this.adjustDuration(deltaTime);
         await this.updateTiles();
         await this.updateHeads();
