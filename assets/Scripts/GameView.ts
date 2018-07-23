@@ -423,14 +423,22 @@ export default class GameView extends cc.Component {
     }
 
     onShareButtonClick(): void {
-        cc.loader.loadRes('Pictures/share', cc.SpriteFrame, (err, data) => {
+        cc.loader.loadRes('share', cc.SpriteFrame, (err, data) => {
+            console.log(data);
             wx.shareAppMessage({
                 title: '你能圈住多大的地盘呢？',
-                imageUrl: data.url,
+                imageUrl: data._textureFilename,
                 success: res => {
                     this.exitBoard.active = false;
                     this.hasReborn = true;
                     this.clientAdapter.rebornPlayer(this.myPlayerID);
+                    console.log('success');
+                },
+                fail: res => {
+                    console.log('fail');
+                },
+                complete: res => {
+                    console.log('complete');
                 }
             });
         });
