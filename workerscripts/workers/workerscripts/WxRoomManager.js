@@ -4,7 +4,6 @@ const WxServer_1 = require("./WxServer");
 class WxRoomManager {
     constructor() {
         this.server = null;
-        console.log('worker start');
         this.server = new WxServer_1.WxServer();
         worker.onMessage(this.handleIncomingMessage.bind(this));
     }
@@ -70,7 +69,7 @@ class WxRoomManager {
                 break;
             }
             default: {
-                console.log('unknow command ' + command);
+                console.log('unknown command ' + command);
             }
         }
     }

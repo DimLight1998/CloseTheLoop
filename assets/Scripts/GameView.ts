@@ -247,24 +247,14 @@ export default class GameView extends cc.Component {
     }
 
     updateHeadsFirstTime(): void {
-        while (this.headRoot.childrenCount > this.players.length) {
-            this.headRoot.children[this.headRoot.childrenCount - 1].destroy();
-        }
-        while (this.headRoot.childrenCount < this.players.length) {
+        for (let i: number = 0; i < this.players.length; i++) {
             this.headRoot.addChild(cc.instantiate(this.playerPrefab));
-        }
-        for (let i: number = 0; i < this.headRoot.childrenCount; i++) {
             this.headRoot.children[i].color = this.darkColorList[this.players[i].playerID];
         }
     }
 
 
     updateHeads(): void {
-
-        if (this.firstFlag) {
-            this.updateHeadsFirstTime();
-        }
-
         for (let i: number = 0; i < this.players.length; i++) {
             const info: IPlayerInfoProto = this.players[i];
 
@@ -320,6 +310,9 @@ export default class GameView extends cc.Component {
     public refreshData(info: PayLoad, deltaTime: number): void {
         this.setLeftTop(info.leftTop, info.mapString);
         this.players = info.players;
+        if (this.firstFlag) {
+            this.updateHeadsFirstTime();
+        }
         this.leaderBoard = info.leaderBoard;
         this.roundSoundFx = info.soundFx;
         this.onWorldChange(deltaTime);
