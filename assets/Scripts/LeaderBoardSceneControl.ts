@@ -39,6 +39,7 @@ export default class LeaderBoardSceneControl extends cc.Component {
         this.texture2D.initWithElement(sharedCanvas);
         this.texture2D.handleLoadedTexture();
         this.display.spriteFrame = new cc.SpriteFrame(this.texture2D);
+        console.log([this.display.node.height, this.display.node.width]);
     }
 
     update(): void {

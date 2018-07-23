@@ -110,6 +110,12 @@ export default class GameView extends cc.Component {
     @property(cc.AudioClip)
     backgroundMusic: cc.AudioClip = null;
 
+    @property(cc.Node)
+    shareBoard: cc.Node = null;
+
+    @property(cc.Node)
+    exitBoard: cc.Node = null;
+
     viewWidth: number;
     viewHeight: number;
 
@@ -145,6 +151,8 @@ export default class GameView extends cc.Component {
 
     asking: boolean = false;
     myLastPercentage: number = 0;
+
+    hasReborn: boolean = false;
 
     public setClientAdapter(adapter: IClientAdapter): void {
         this.clientAdapter = adapter;
@@ -399,8 +407,27 @@ export default class GameView extends cc.Component {
                 param2: this.players[this.myPlayerID - 1].nKill
             });
 
-            this.clientAdapter.rebornPlayer(this.myPlayerID);
+            // show corresponding board
+            if (this.hasReborn) {
+                this.exitBoard.active = true;
+            } else {
+                this.shareBoard.active = true;
+            }
         }
+    }
+
+    onShareButtonClick(): void {
+        cc.loader.loadRes('Pictures/share', cc.SpriteFrame, (err, data) => {
+            wx.shareAppMessage({
+                title: '你能圈住多大的地盘呢？',
+                imageUrl: data.url,
+                success: res => {
+                    this.exitBoard.active = false;
+                    this.hasReborn = true;
+                    this.clientAdapter.rebornPlayer(this.myPlayerID);
+                }
+            });
+        });
     }
 
     onWorldChange(deltaTime: number): void {
@@ -478,6 +505,19 @@ export default class GameView extends cc.Component {
 
         // play bgm
         cc.audioEngine.play(this.backgroundMusic, true, 1);
+
+        // buttons on boards
+        this.shareBoard.getChildByName('ShareButton').on('click', () => { this.onShareButtonClick(); }, this);
+        this.shareBoard.getChildByName('ExitButton').on('click', () => { cc.director.loadScene('Splash'); }, this);
+        this.exitBoard.getChildByName('IKnowButton').on('click', () => { cc.director.loadScene('Splash'); }, this);
+        this.exitBoard.getChildByName('ExitButton').on('click', () => { cc.director.loadScene('Splash'); }, this);
+
+        this.shareBoard.color = this.lightColorList[this.myPlayerID];
+        this.exitBoard.color = this.lightColorList[this.myPlayerID];
+        this.shareBoard.getChildByName('ShareButton').color = this.darkColorList[this.myPlayerID];
+        this.shareBoard.getChildByName('ExitButton').color = this.darkColorList[this.myPlayerID];
+        this.exitBoard.getChildByName('IKnowButton').color = this.darkColorList[this.myPlayerID];
+        this.exitBoard.getChildByName('ExitButton').color = this.darkColorList[this.myPlayerID];
     }
 
     /**
