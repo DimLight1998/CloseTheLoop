@@ -396,8 +396,8 @@ export default class GameView extends cc.Component {
 
         // update myLastPercentage
         for (let i: number = 0; i < this.leaderBoard.length; i++) {
-            if (this.leaderBoard[i][0] === this.myPlayerID) {
-                this.myLastPercentage = this.leaderBoard[i][1];
+            if (this.leaderBoard[i].id === this.myPlayerID) {
+                this.myLastPercentage = this.leaderBoard[i].ratio;
             }
         }
     }

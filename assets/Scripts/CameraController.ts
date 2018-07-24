@@ -9,6 +9,8 @@ export default class CameraController extends cc.Component {
     }
 
     update(): void {
-        this.node.position = this.follower.position;
+        if (this.follower !== null) {
+            this.node.position = this.follower.position;
+        }
     }
 }
