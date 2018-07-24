@@ -595,10 +595,10 @@ export class GameRoom {
             });
 
             // @bug this implementation is wrong when one player has multiple viewports, but now it is okay
-            if (Math.abs(info.focusPoint.x - info.headPos.x) > viewNRows / 2) {
+            if (Math.abs(info.focusPoint.x - info.headPos.x) > viewNRows / 4) {
                 info.focusPoint.x = info.headPos.x;
             }
-            if (Math.abs(info.focusPoint.y - info.headPos.y) > viewNCols / 2) {
+            if (Math.abs(info.focusPoint.y - info.headPos.y) > viewNCols / 4) {
                 info.focusPoint.y = info.headPos.y;
             }
             if (info.playerID === playerID2Track) {
