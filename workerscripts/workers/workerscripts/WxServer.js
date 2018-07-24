@@ -26,9 +26,11 @@ class WxServer {
         this.room.initPlayerInfoProto();
         for (let listener of this.listeners) {
             const payload = this.room.getListenerViewProtobuf(listener.playerID2Track, listener.viewNRows, listener.viewNCols);
+            const result = PayLoadProtobuf_1.PayLoad.encode(payload).finish();
+            const converted = result.slice(0, result.length).buffer;
             worker.postMessage({
                 command: 'WORLD',
-                payload: PayLoadProtobuf_1.PayLoad.encode(payload).finish().buffer
+                payload: converted
             });
         }
     }

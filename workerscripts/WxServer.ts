@@ -41,9 +41,11 @@ export class WxServer implements IServerAdapter {
         this.room.initPlayerInfoProto();
         for (let listener of this.listeners) {
             const payload: PayLoad = this.room.getListenerViewProtobuf(listener.playerID2Track, listener.viewNRows, listener.viewNCols);
+            const result: Uint8Array = PayLoad.encode(payload).finish();
+            const converted: ArrayBuffer = result.slice(0, result.length).buffer;
             worker.postMessage({
                 command: 'WORLD',
-                payload: PayLoad.encode(payload).finish().buffer
+                payload: converted
             });
         }
     }
