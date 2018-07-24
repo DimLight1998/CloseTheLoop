@@ -135,7 +135,7 @@ export default class GameView extends cc.Component {
 
     myPlayerID: number;
     myRoomID: number;
-    leftTop: IMyPointProto;
+    leftTop: IMyPointProto = null;
 
     leaderBoardBars: cc.Node[] = [];
     leaderBoardDetails: cc.Node[] = [];
@@ -161,6 +161,8 @@ export default class GameView extends cc.Component {
     headSpeedY: number;
 
     timeLeft: number;
+
+    leftTopChanged: boolean;
 
     public setClientAdapter(adapter: IClientAdapter): void {
         this.clientAdapter = adapter;
@@ -201,7 +203,23 @@ export default class GameView extends cc.Component {
                 cnt++;
             }
         }
-        this.leftTop = newLeftTop;
+
+        const cameraPos: cc.Vec2 = this.getRowColPosition(newLeftTop.x, newLeftTop.y)
+            .add(cc.v2(this.viewWidth / 2, -this.viewHeight / 2));
+        // @note when using this strategy, disable CameraController
+        if (this.leftTop === null) {
+            this.leftTop = newLeftTop;
+            this.leftTopChanged = true;
+            this.cameraNode.position = cameraPos;
+        } else if (this.leftTop.x !== newLeftTop.x || this.leftTop.y !== newLeftTop.y) {
+            this.leftTop.x = newLeftTop.x;
+            this.leftTop.y = newLeftTop.y;
+            this.leftTopChanged = true;
+            this.cameraNode.stopAllActions();
+            this.cameraNode.runAction(cc.moveTo(0.1, cameraPos));
+        } else {
+            this.leftTopChanged = false;
+        }
     }
 
     /**
@@ -276,13 +294,8 @@ export default class GameView extends cc.Component {
                         this.foregroundNode = null;
                     }
                     this.asking = false;
-                    this.cameraNode.getComponent(CameraController).setFollower(this.headRoot.children[i]);
                 }
             } else if (info.state === 1) {
-                if (info.playerID === this.myPlayerID) {
-                    this.cameraNode.getComponent(CameraController).setFollower(null);
-                }
-
                 this.headRoot.children[i].position = cc.v2(1e9, 1e9);
 
                 const explosion: cc.Node = cc.instantiate(this.particlePrefab);
@@ -335,7 +348,9 @@ export default class GameView extends cc.Component {
         for (let r: number = this.leftTop.x; r < this.leftTop.x + this.nRows; r++) {
             for (let c: number = this.leftTop.y; c < this.leftTop.y + this.nCols; c++) {
 
-                this.colorTiles[r][c].position = this.trackTiles[r][c].position = this.getRowColPosition(r, c);
+                if (this.leftTopChanged) {
+                    this.colorTiles[r][c].position = this.trackTiles[r][c].position = this.getRowColPosition(r, c);
+                }
 
                 if (this.colorMap[r][c] === 15) { // wall
                     this.colorTiles[r][c].getComponent(cc.Sprite).spriteFrame = this.wallFrame;
@@ -492,7 +507,7 @@ export default class GameView extends cc.Component {
 
         this.viewWidth = cc.view.getVisibleSizeInPixel().width;
         this.viewHeight = cc.view.getVisibleSizeInPixel().height;
-        this.nCols = Math.ceil((this.nRows - 3) * this.viewWidth / this.viewHeight) + 3;
+        this.nCols = Math.ceil(this.nRows * this.viewWidth / this.viewHeight);
 
         for (let c of GameView.colorList) {
             this.lightColorList.push(cc.color(...GameView.toRGBTuple(c)));
