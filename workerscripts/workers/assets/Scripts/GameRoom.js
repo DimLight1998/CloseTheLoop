@@ -138,7 +138,8 @@ class GameRoom {
                 nKill: 0,
                 state: 2,
                 nextDirection: 0,
-                tracks: []
+                tracks: [],
+                focusPoint: null
             };
             this.serverPlayerInfos.push(info);
             info.aiInstance = new GameAI_1.GameAI(this, i + 1);
@@ -326,6 +327,10 @@ class GameRoom {
             const info = this.serverPlayerInfos[playerID - 1];
             info.headPos = this.randomSpawnNewPlayer(playerID);
             if (info.headPos !== null) {
+                info.focusPoint = {
+                    x: info.headPos.x,
+                    y: info.headPos.y
+                };
                 info.state = 3;
                 info.nKill = 0;
                 info.aiInstance.init();
@@ -516,10 +521,17 @@ class GameRoom {
                 tracks: info.tracks,
                 nKill: info.nKill
             });
+            // @bug this implementation is wrong when one player has multiple viewports, but now it is okay
+            if (Math.abs(info.focusPoint.x - info.headPos.x) > viewNRows / 2) {
+                info.focusPoint.x = info.headPos.x;
+            }
+            if (Math.abs(info.focusPoint.y - info.headPos.y) > viewNCols / 2) {
+                info.focusPoint.y = info.headPos.y;
+            }
             if (info.playerID === playerID2Track) {
                 leftTop = {
-                    x: info.headPos.x - Math.floor(viewNRows / 2),
-                    y: info.headPos.y - Math.floor(viewNCols / 2)
+                    x: info.focusPoint.x - Math.floor(viewNRows / 2),
+                    y: info.focusPoint.y - Math.floor(viewNCols / 2)
                 };
                 GameRoom.rangeAll(leftTop.x, leftTop.x + viewNRows - 1, leftTop.y, leftTop.y + viewNCols - 1, func);
             }
@@ -550,8 +562,15 @@ class GameRoom {
     }
     getListenerViewProtobuf(playerID2Track, viewNRows, viewNCols) {
         const info = this.serverPlayerInfos[playerID2Track - 1];
-        this.payload.leftTop.x = info.headPos.x - Math.floor(viewNRows / 2);
-        this.payload.leftTop.y = info.headPos.y - Math.floor(viewNCols / 2);
+        // @bug this implementation is wrong when one player has multiple viewports, but now it is okay
+        if (Math.abs(info.focusPoint.x - info.headPos.x) > viewNRows / 4) {
+            info.focusPoint.x = info.headPos.x;
+        }
+        if (Math.abs(info.focusPoint.y - info.headPos.y) > viewNCols / 4) {
+            info.focusPoint.y = info.headPos.y;
+        }
+        this.payload.leftTop.x = info.focusPoint.x - Math.floor(viewNRows / 2);
+        this.payload.leftTop.y = info.focusPoint.y - Math.floor(viewNCols / 2);
         const [x1, x2, y1, y2] = [this.payload.leftTop.x, this.payload.leftTop.x + viewNRows - 1,
             this.payload.leftTop.y, this.payload.leftTop.y + viewNCols - 1];
         this.payload.mapString = new Uint8Array(new ArrayBuffer(viewNRows * viewNCols));
