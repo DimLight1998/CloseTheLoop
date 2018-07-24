@@ -119,9 +119,6 @@ export default class GameView extends cc.Component {
     viewWidth: number;
     viewHeight: number;
 
-    designWidth: number;
-    designHeight: number;
-
     colorRoot: cc.Node;
     trackRoot: cc.Node;
     headRoot: cc.Node;
@@ -208,7 +205,7 @@ export default class GameView extends cc.Component {
         }
 
         const cameraPos: cc.Vec2 = this.getRowColPosition(newLeftTop.x, newLeftTop.y)
-            .add(cc.v2(this.designWidth / 2 - this.spriteWidth / 2, -this.designHeight / 2 + this.spriteHeight / 2));
+            .add(cc.v2(this.viewWidth / 2 - this.spriteWidth / 2, -this.viewHeight / 2 + this.spriteHeight / 2));
         // @note when using this strategy, disable CameraController
         if (this.leftTop === null) {
             this.leftTop = newLeftTop;
@@ -508,12 +505,9 @@ export default class GameView extends cc.Component {
         this.firstFlag = true;
         this.asking = false;
 
-        this.viewWidth = cc.view.getVisibleSizeInPixel().width;
-        this.viewHeight = cc.view.getVisibleSizeInPixel().height;
+        this.viewWidth = cc.view.getVisibleSize().width;
+        this.viewHeight = cc.view.getVisibleSize().height;
         this.nCols = Math.ceil(this.nRows * this.viewWidth / this.viewHeight);
-
-        this.designWidth = cc.view.getDesignResolutionSize().width;
-        this.designHeight = cc.view.getDesignResolutionSize().height;
 
         for (let c of GameView.colorList) {
             this.lightColorList.push(cc.color(...GameView.toRGBTuple(c)));
