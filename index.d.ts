@@ -79,7 +79,7 @@ interface tinycolor {
      * @param backColor - the back color wanted.
 	 * @param wcag2 - The 'level' property states 'AA' or 'AAA' - if missing or invalid, it defaults to 'AA'; the 'size' property states 'large' or 'small' - if missing or invalid, it defaults to 'small'. If the entire object is absent, isReadable defaults to {level:"AA",size:"small"}.
      */
-    isReadable(foreColor: ColorInput, backColor: ColorInput, wcag2?: {level?: string, size?: string}): boolean;
+    isReadable(foreColor: ColorInput, backColor: ColorInput, wcag2?: { level?: string, size?: string }): boolean;
 
     /**
      * Given a base color and a list of possible foreground or background colors for that base,
@@ -89,7 +89,7 @@ interface tinycolor {
      * @param colorsToCompare - array of colors to pick the most readable one from.
 	 * @param args - and object with extra arguments
      */
-    mostReadable(color: ColorInput, colorsToCompare: ColorInput[], args?: {includeFallbackColors?: boolean, level?: string, size?: string}): tinycolorInstance;
+    mostReadable(color: ColorInput, colorsToCompare: ColorInput[], args?: { includeFallbackColors?: boolean, level?: string, size?: string }): tinycolorInstance;
 
     /**/
     mix(color1: ColorInput, color2: ColorInput, amount?: number): tinycolorInstance;
@@ -213,10 +213,10 @@ interface tinycolorInstance {
      */
     toRgb(): ColorFormats.RGBA;
 
-     /**
-     * Returns the RGBA values interpolated into a string with the following format:
-     * "RGBA(xxx, xxx, xxx, xx)".
-     */
+    /**
+    * Returns the RGBA values interpolated into a string with the following format:
+    * "RGBA(xxx, xxx, xxx, xx)".
+    */
     toRgbString(): string;
 
     /**
@@ -393,3 +393,14 @@ declare module 'tinycolor2' {
 }
 
 declare var wx: any;
+
+declare class WxWorker {
+    postMessage(obj: Object): void;
+    onMessage(callback: (obj: any) => void): void;
+    terminate(): void;
+}
+
+declare namespace worker {
+    function postMessage(obj: Object): void;
+    function onMessage(callback: (obj: any) => void): void;
+}

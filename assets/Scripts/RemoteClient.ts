@@ -93,4 +93,8 @@ export class RemoteClient implements IClientAdapter {
         ExitStatus.setToNormal();
         this.webSocket.close();
     }
+
+    wxFireRoundStartEvent(): void {
+        // do nothing
+    }
 }

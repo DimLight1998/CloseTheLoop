@@ -3,8 +3,9 @@ import LocalGameController from './LocalGameController';
 import { GameRoom } from './GameRoom';
 import { LocalClient } from './LocalClient';
 import { PayLoadJson } from './PlayerInfo';
+import { PayLoad } from './PayLoadProtobuf';
 
-export interface ILocalListener {
+export class LocalListener {
     client: LocalClient;
     playerID2Track: number;
     viewNRows: number;
@@ -16,13 +17,14 @@ export class LocalServer implements IServerAdapter {
 
     ctrl: LocalGameController = null;
 
-    listeners: ILocalListener[] = [];
+    listeners: LocalListener[] = [];
 
     constructor(ctrl: LocalGameController) {
         this.ctrl = ctrl;
 
         this.room = new GameRoom(this.ctrl.totalNRows, this.ctrl.totalNCols, this.ctrl.totalNPlayers);
         this.room.setServerAdapter(this);
+        this.room.startNewGame();
     }
     // iServer
     handleChangeDirection(playerID: number, direction: number): void {
@@ -34,8 +36,8 @@ export class LocalServer implements IServerAdapter {
     dispatchNewWorld(): void {
         this.room.initPlayerInfoProto();
         for (let listener of this.listeners) {
-            const payload: Uint8Array = this.room.getListenerViewProtobuf(listener.playerID2Track, listener.viewNRows, listener.viewNCols);
-            listener.client.pushNewWorldResponse(payload);
+            const payload: PayLoad = this.room.getListenerViewProtobuf(listener.playerID2Track, listener.viewNRows, listener.viewNCols);
+            listener.client.pushNewWorldResponse(PayLoad.encode(payload).finish());
         }
     }
 
