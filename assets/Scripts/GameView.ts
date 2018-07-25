@@ -330,9 +330,6 @@ export default class GameView extends cc.Component {
         for (const item of this.leaderBoard) {
             item.ratio /= 10000;
         }
-        if (cc.random0To1() < 0.05) {
-            console.log(this.leaderBoard); // fixme
-        }
         this.roundSoundFx = info.soundFx;
         this.onWorldChange(deltaTime);
     }
