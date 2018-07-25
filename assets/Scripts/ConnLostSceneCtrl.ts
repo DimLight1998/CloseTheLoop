@@ -12,7 +12,6 @@ export default class ConnLostSceneCtrl extends cc.Component {
     onLoad(): void {
         let [light, dark, darker]: [cc.Color, cc.Color, cc.Color] = ColorUtil.getInstance().getRandomColor();
 
-        [this.haloNode.height, this.haloNode.width] = [this.node.height, this.node.width];
         this.haloNode.color = light;
         this.mainButton.node.color = dark;
         this.mainButton.node.on('click', () => { cc.director.loadScene('Splash'); }, this);

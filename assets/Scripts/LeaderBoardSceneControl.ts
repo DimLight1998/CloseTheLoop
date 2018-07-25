@@ -15,8 +15,6 @@ export default class LeaderBoardSceneControl extends cc.Component {
     texture2D: cc.Texture2D = null;
 
     start(): void {
-        this.haloSprite.node.height = this.node.height;
-        this.haloSprite.node.width = this.node.width;
         [this.haloSprite.node.color, this.exitButton.node.color] =
             ColorUtil.getInstance().getRandomColor().slice(0, 2);
 
