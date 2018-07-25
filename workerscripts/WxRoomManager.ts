@@ -73,6 +73,12 @@ export class WxRoomManager implements IRoomMangerAdapter {
                 this.server.startCompute();
                 break;
             }
+            case 'STOP': { // there won't be other command later
+                worker.postMessage({
+                    command: 'STOP_OK'
+                });
+                break;
+            }
             default: {
                 console.log('unknown command ' + command);
             }

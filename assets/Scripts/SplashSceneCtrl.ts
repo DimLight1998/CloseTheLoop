@@ -1,4 +1,4 @@
-import { ColorUtil, SingleMultipleSelector } from './Config';
+import { ColorUtil, SingleMultipleSelector, WorkerStatus } from './Config';
 const { ccclass, property } = cc._decorator;
 
 @ccclass
@@ -34,8 +34,10 @@ export default class SplashSceneCtrl extends cc.Component {
         this.leaderBoardButton.node.color = this.darkColor;
 
         this.singlePlayerButton.node.on('click', () => {
-            SingleMultipleSelector.setSingle();
-            cc.director.loadScene('Gaming');
+            if (WorkerStatus.workerTerminated) {// prevent entering single mode when worker is not terminated
+                SingleMultipleSelector.setSingle();
+                cc.director.loadScene('Gaming');
+            }
         }, this);
         this.multiPlayerButton.node.on('click', () => {
             SingleMultipleSelector.setMultiple();
