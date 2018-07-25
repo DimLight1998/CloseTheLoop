@@ -327,6 +327,9 @@ export default class GameView extends cc.Component {
             this.updateHeadsFirstTime();
         }
         this.leaderBoard = info.leaderBoard;
+        if (cc.random0To1() < 0.05) {
+            console.log(this.leaderBoard);
+        }
         this.roundSoundFx = info.soundFx;
         this.onWorldChange(deltaTime);
     }
@@ -549,18 +552,18 @@ export default class GameView extends cc.Component {
         this.shareBoard.getChildByName('ShareButton').on('click', this.onShareButtonClick, this);
         this.shareBoard.getChildByName('ExitButton').on('click',
             () => {
-                cc.director.loadScene('Splash');
                 this.clientAdapter.leaveRoom(this.myPlayerID);
+                cc.director.loadScene('Splash');
             }, this);
         this.exitBoard.getChildByName('IKnowButton').on('click',
             () => {
-                cc.director.loadScene('Splash');
                 this.clientAdapter.leaveRoom(this.myPlayerID);
+                cc.director.loadScene('Splash');
             }, this);
         this.exitBoard.getChildByName('ExitButton').on('click',
             () => {
-                cc.director.loadScene('Splash');
                 this.clientAdapter.leaveRoom(this.myPlayerID);
+                cc.director.loadScene('Splash');
             }, this);
     }
 
