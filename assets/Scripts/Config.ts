@@ -88,5 +88,6 @@ export class ExitStatus {
 }
 
 export class WorkerStatus {
+    static workerRef: WxWorker;
     static workerTerminated: boolean = true;
 }

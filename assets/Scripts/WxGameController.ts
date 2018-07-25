@@ -36,16 +36,17 @@ export default class WxGameController extends cc.Component {
 
     onDestroy(): void {
         if (this.worker !== null) {
-            let workerRef: WxWorker = this.worker;
+            WorkerStatus.workerRef = this.worker;
             this.worker = null;
-            workerRef.onMessage((obj) => {
+            WorkerStatus.workerRef.onMessage((obj) => {
                 if (obj.command === 'STOP_OK') {
-                    workerRef.terminate();
+                    WorkerStatus.workerRef.terminate();
                     WorkerStatus.workerTerminated = true;
+                    WorkerStatus.workerRef = null;
                 }
             });
 
-            workerRef.postMessage({
+            WorkerStatus.workerRef.postMessage({
                 command: 'STOP'
             });
         }
