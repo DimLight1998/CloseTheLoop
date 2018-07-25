@@ -328,7 +328,7 @@ export default class GameView extends cc.Component {
         }
         this.leaderBoard = info.leaderBoard;
         if (cc.random0To1() < 0.05) {
-            console.log(this.leaderBoard);
+            console.log(this.leaderBoard); // fixme
         }
         this.roundSoundFx = info.soundFx;
         this.onWorldChange(deltaTime);
