@@ -1,5 +1,6 @@
 import GameView from './GameView';
 import { WxClient } from './WxClient';
+import { WorkerStatus } from './Config';
 
 const { ccclass, property } = cc._decorator;
 
@@ -25,6 +26,8 @@ export default class WxGameController extends cc.Component {
 
     onEnable(): void {
         this.worker = wx.createWorker('workers/workerscripts/WxRoomManager.js');
+        WorkerStatus.workerTerminated = false;
+
         this.worker.onMessage(this.handleIncomingMessage.bind(this));
         this.client = new WxClient(this, this.view);
         this.view.startGame();
@@ -33,7 +36,18 @@ export default class WxGameController extends cc.Component {
 
     onDestroy(): void {
         if (this.worker !== null) {
-            this.worker.terminate();
+            let workerRef: WxWorker = this.worker;
+            this.worker = null;
+            workerRef.onMessage((obj) => {
+                if (obj.command === 'STOP_OK') {
+                    workerRef.terminate();
+                    WorkerStatus.workerTerminated = true;
+                }
+            });
+
+            workerRef.postMessage({
+                command: 'STOP'
+            });
         }
     }
 }

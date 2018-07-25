@@ -68,6 +68,11 @@ class WxRoomManager {
                 this.server.startCompute();
                 break;
             }
+            case 'STOP': { // there won't be other command later
+                worker.postMessage({
+                    command: 'STOP_OK'
+                });
+            }
             default: {
                 console.log('unknown command ' + command);
             }

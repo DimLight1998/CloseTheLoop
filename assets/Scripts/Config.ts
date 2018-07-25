@@ -86,3 +86,7 @@ export class ExitStatus {
         return ExitStatus.isNormalExit;
     }
 }
+
+export class WorkerStatus {
+    static workerTerminated: boolean = true;
+}
