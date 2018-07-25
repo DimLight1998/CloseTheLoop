@@ -72,6 +72,7 @@ class WxRoomManager {
                 worker.postMessage({
                     command: 'STOP_OK'
                 });
+                break;
             }
             default: {
                 console.log('unknown command ' + command);

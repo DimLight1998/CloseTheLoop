@@ -503,8 +503,7 @@ export default class GameView extends cc.Component {
      * add colors and tracks sprites for later manipulation.
      * only tiles in the view will be rendered.
      */
-    onLoad(): void {
-
+    onEnable(): void {
         this.firstFlag = true;
         this.asking = false;
 
@@ -541,9 +540,6 @@ export default class GameView extends cc.Component {
         }
 
         // replace scale halo by using widget
-
-        [this.foregroundNode.getChildByName('LoadLabel').color, this.haloNode.color]
-            = ColorUtil.getInstance().getRandomColor().slice(0, 2);
 
         // play bgm
         cc.audioEngine.play(this.backgroundMusic, true, 1);
