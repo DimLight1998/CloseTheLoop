@@ -1,11 +1,16 @@
 /*eslint-disable block-scoped-var, id-length, no-control-regex, no-magic-numbers, no-prototype-builtins, no-redeclare, no-shadow, no-var, sort-vars*/
 "use strict";
+
 var $protobuf = require('./protobufjs');
+
 // Common aliases
 var $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.util;
+
 // Exported root namespace
 var $root = $protobuf.roots["default"] || ($protobuf.roots["default"] = {});
-$root.MyPointProto = (function () {
+
+$root.MyPointProto = (function() {
+
     /**
      * Properties of a MyPointProto.
      * @exports IMyPointProto
@@ -13,6 +18,7 @@ $root.MyPointProto = (function () {
      * @property {number} x MyPointProto x
      * @property {number} y MyPointProto y
      */
+
     /**
      * Constructs a new MyPointProto.
      * @exports MyPointProto
@@ -27,6 +33,7 @@ $root.MyPointProto = (function () {
                 if (properties[keys[i]] != null)
                     this[keys[i]] = properties[keys[i]];
     }
+
     /**
      * MyPointProto x.
      * @member {number} x
@@ -34,6 +41,7 @@ $root.MyPointProto = (function () {
      * @instance
      */
     MyPointProto.prototype.x = 0;
+
     /**
      * MyPointProto y.
      * @member {number} y
@@ -41,6 +49,7 @@ $root.MyPointProto = (function () {
      * @instance
      */
     MyPointProto.prototype.y = 0;
+
     /**
      * Creates a new MyPointProto instance using the specified properties.
      * @function create
@@ -52,6 +61,7 @@ $root.MyPointProto = (function () {
     MyPointProto.create = function create(properties) {
         return new MyPointProto(properties);
     };
+
     /**
      * Encodes the specified MyPointProto message. Does not implicitly {@link MyPointProto.verify|verify} messages.
      * @function encode
@@ -64,10 +74,11 @@ $root.MyPointProto = (function () {
     MyPointProto.encode = function encode(message, writer) {
         if (!writer)
             writer = $Writer.create();
-        writer.uint32(/* id 1, wireType 0 =*/ 8).sint32(message.x);
-        writer.uint32(/* id 2, wireType 0 =*/ 16).sint32(message.y);
+        writer.uint32(/* id 1, wireType 0 =*/8).sint32(message.x);
+        writer.uint32(/* id 2, wireType 0 =*/16).sint32(message.y);
         return writer;
     };
+
     /**
      * Encodes the specified MyPointProto message, length delimited. Does not implicitly {@link MyPointProto.verify|verify} messages.
      * @function encodeDelimited
@@ -80,6 +91,7 @@ $root.MyPointProto = (function () {
     MyPointProto.encodeDelimited = function encodeDelimited(message, writer) {
         return this.encode(message, writer).ldelim();
     };
+
     /**
      * Decodes a MyPointProto message from the specified reader or buffer.
      * @function decode
@@ -98,15 +110,15 @@ $root.MyPointProto = (function () {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1:
-                    message.x = reader.sint32();
-                    break;
-                case 2:
-                    message.y = reader.sint32();
-                    break;
-                default:
-                    reader.skipType(tag & 7);
-                    break;
+            case 1:
+                message.x = reader.sint32();
+                break;
+            case 2:
+                message.y = reader.sint32();
+                break;
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
         if (!message.hasOwnProperty("x"))
@@ -115,6 +127,7 @@ $root.MyPointProto = (function () {
             throw $util.ProtocolError("missing required 'y'", { instance: message });
         return message;
     };
+
     /**
      * Decodes a MyPointProto message from the specified reader or buffer, length delimited.
      * @function decodeDelimited
@@ -130,6 +143,7 @@ $root.MyPointProto = (function () {
             reader = new $Reader(reader);
         return this.decode(reader, reader.uint32());
     };
+
     /**
      * Verifies a MyPointProto message.
      * @function verify
@@ -147,6 +161,7 @@ $root.MyPointProto = (function () {
             return "y: integer expected";
         return null;
     };
+
     /**
      * Creates a MyPointProto message from a plain object. Also converts values to their respective internal types.
      * @function fromObject
@@ -165,6 +180,7 @@ $root.MyPointProto = (function () {
             message.y = object.y | 0;
         return message;
     };
+
     /**
      * Creates a plain object from a MyPointProto message. Also converts values to other types if specified.
      * @function toObject
@@ -188,6 +204,7 @@ $root.MyPointProto = (function () {
             object.y = message.y;
         return object;
     };
+
     /**
      * Converts this MyPointProto to JSON.
      * @function toJSON
@@ -198,9 +215,12 @@ $root.MyPointProto = (function () {
     MyPointProto.prototype.toJSON = function toJSON() {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
     };
+
     return MyPointProto;
 })();
-$root.PlayerInfoProto = (function () {
+
+$root.PlayerInfoProto = (function() {
+
     /**
      * Properties of a PlayerInfoProto.
      * @exports IPlayerInfoProto
@@ -212,6 +232,7 @@ $root.PlayerInfoProto = (function () {
      * @property {number} state PlayerInfoProto state
      * @property {Array.<ITrack>|null} [tracks] PlayerInfoProto tracks
      */
+
     /**
      * Constructs a new PlayerInfoProto.
      * @exports PlayerInfoProto
@@ -227,6 +248,7 @@ $root.PlayerInfoProto = (function () {
                 if (properties[keys[i]] != null)
                     this[keys[i]] = properties[keys[i]];
     }
+
     /**
      * PlayerInfoProto playerID.
      * @member {number} playerID
@@ -234,6 +256,7 @@ $root.PlayerInfoProto = (function () {
      * @instance
      */
     PlayerInfoProto.prototype.playerID = 0;
+
     /**
      * PlayerInfoProto headPos.
      * @member {IMyPointProto} headPos
@@ -241,6 +264,7 @@ $root.PlayerInfoProto = (function () {
      * @instance
      */
     PlayerInfoProto.prototype.headPos = null;
+
     /**
      * PlayerInfoProto headDirection.
      * @member {number} headDirection
@@ -248,6 +272,7 @@ $root.PlayerInfoProto = (function () {
      * @instance
      */
     PlayerInfoProto.prototype.headDirection = 0;
+
     /**
      * PlayerInfoProto nKill.
      * @member {number} nKill
@@ -255,6 +280,7 @@ $root.PlayerInfoProto = (function () {
      * @instance
      */
     PlayerInfoProto.prototype.nKill = 0;
+
     /**
      * PlayerInfoProto state.
      * @member {number} state
@@ -262,6 +288,7 @@ $root.PlayerInfoProto = (function () {
      * @instance
      */
     PlayerInfoProto.prototype.state = 0;
+
     /**
      * PlayerInfoProto tracks.
      * @member {Array.<ITrack>} tracks
@@ -269,6 +296,7 @@ $root.PlayerInfoProto = (function () {
      * @instance
      */
     PlayerInfoProto.prototype.tracks = $util.emptyArray;
+
     /**
      * Creates a new PlayerInfoProto instance using the specified properties.
      * @function create
@@ -280,6 +308,7 @@ $root.PlayerInfoProto = (function () {
     PlayerInfoProto.create = function create(properties) {
         return new PlayerInfoProto(properties);
     };
+
     /**
      * Encodes the specified PlayerInfoProto message. Does not implicitly {@link PlayerInfoProto.verify|verify} messages.
      * @function encode
@@ -292,16 +321,17 @@ $root.PlayerInfoProto = (function () {
     PlayerInfoProto.encode = function encode(message, writer) {
         if (!writer)
             writer = $Writer.create();
-        writer.uint32(/* id 1, wireType 0 =*/ 8).uint32(message.playerID);
-        $root.MyPointProto.encode(message.headPos, writer.uint32(/* id 2, wireType 2 =*/ 18).fork()).ldelim();
-        writer.uint32(/* id 3, wireType 0 =*/ 24).uint32(message.headDirection);
-        writer.uint32(/* id 4, wireType 0 =*/ 32).uint32(message.nKill);
-        writer.uint32(/* id 5, wireType 0 =*/ 40).uint32(message.state);
+        writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.playerID);
+        $root.MyPointProto.encode(message.headPos, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        writer.uint32(/* id 3, wireType 0 =*/24).uint32(message.headDirection);
+        writer.uint32(/* id 4, wireType 0 =*/32).uint32(message.nKill);
+        writer.uint32(/* id 5, wireType 0 =*/40).uint32(message.state);
         if (message.tracks != null && message.tracks.length)
             for (var i = 0; i < message.tracks.length; ++i)
-                $root.Track.encode(message.tracks[i], writer.uint32(/* id 6, wireType 2 =*/ 50).fork()).ldelim();
+                $root.Track.encode(message.tracks[i], writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
         return writer;
     };
+
     /**
      * Encodes the specified PlayerInfoProto message, length delimited. Does not implicitly {@link PlayerInfoProto.verify|verify} messages.
      * @function encodeDelimited
@@ -314,6 +344,7 @@ $root.PlayerInfoProto = (function () {
     PlayerInfoProto.encodeDelimited = function encodeDelimited(message, writer) {
         return this.encode(message, writer).ldelim();
     };
+
     /**
      * Decodes a PlayerInfoProto message from the specified reader or buffer.
      * @function decode
@@ -332,29 +363,29 @@ $root.PlayerInfoProto = (function () {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1:
-                    message.playerID = reader.uint32();
-                    break;
-                case 2:
-                    message.headPos = $root.MyPointProto.decode(reader, reader.uint32());
-                    break;
-                case 3:
-                    message.headDirection = reader.uint32();
-                    break;
-                case 4:
-                    message.nKill = reader.uint32();
-                    break;
-                case 5:
-                    message.state = reader.uint32();
-                    break;
-                case 6:
-                    if (!(message.tracks && message.tracks.length))
-                        message.tracks = [];
-                    message.tracks.push($root.Track.decode(reader, reader.uint32()));
-                    break;
-                default:
-                    reader.skipType(tag & 7);
-                    break;
+            case 1:
+                message.playerID = reader.uint32();
+                break;
+            case 2:
+                message.headPos = $root.MyPointProto.decode(reader, reader.uint32());
+                break;
+            case 3:
+                message.headDirection = reader.uint32();
+                break;
+            case 4:
+                message.nKill = reader.uint32();
+                break;
+            case 5:
+                message.state = reader.uint32();
+                break;
+            case 6:
+                if (!(message.tracks && message.tracks.length))
+                    message.tracks = [];
+                message.tracks.push($root.Track.decode(reader, reader.uint32()));
+                break;
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
         if (!message.hasOwnProperty("playerID"))
@@ -369,6 +400,7 @@ $root.PlayerInfoProto = (function () {
             throw $util.ProtocolError("missing required 'state'", { instance: message });
         return message;
     };
+
     /**
      * Decodes a PlayerInfoProto message from the specified reader or buffer, length delimited.
      * @function decodeDelimited
@@ -384,6 +416,7 @@ $root.PlayerInfoProto = (function () {
             reader = new $Reader(reader);
         return this.decode(reader, reader.uint32());
     };
+
     /**
      * Verifies a PlayerInfoProto message.
      * @function verify
@@ -419,6 +452,7 @@ $root.PlayerInfoProto = (function () {
         }
         return null;
     };
+
     /**
      * Creates a PlayerInfoProto message from a plain object. Also converts values to their respective internal types.
      * @function fromObject
@@ -456,6 +490,7 @@ $root.PlayerInfoProto = (function () {
         }
         return message;
     };
+
     /**
      * Creates a plain object from a PlayerInfoProto message. Also converts values to other types if specified.
      * @function toObject
@@ -495,6 +530,7 @@ $root.PlayerInfoProto = (function () {
         }
         return object;
     };
+
     /**
      * Converts this PlayerInfoProto to JSON.
      * @function toJSON
@@ -505,9 +541,12 @@ $root.PlayerInfoProto = (function () {
     PlayerInfoProto.prototype.toJSON = function toJSON() {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
     };
+
     return PlayerInfoProto;
 })();
-$root.Track = (function () {
+
+$root.Track = (function() {
+
     /**
      * Properties of a Track.
      * @exports ITrack
@@ -516,6 +555,7 @@ $root.Track = (function () {
      * @property {number} y Track y
      * @property {number} d Track d
      */
+
     /**
      * Constructs a new Track.
      * @exports Track
@@ -530,6 +570,7 @@ $root.Track = (function () {
                 if (properties[keys[i]] != null)
                     this[keys[i]] = properties[keys[i]];
     }
+
     /**
      * Track x.
      * @member {number} x
@@ -537,6 +578,7 @@ $root.Track = (function () {
      * @instance
      */
     Track.prototype.x = 0;
+
     /**
      * Track y.
      * @member {number} y
@@ -544,6 +586,7 @@ $root.Track = (function () {
      * @instance
      */
     Track.prototype.y = 0;
+
     /**
      * Track d.
      * @member {number} d
@@ -551,6 +594,7 @@ $root.Track = (function () {
      * @instance
      */
     Track.prototype.d = 0;
+
     /**
      * Creates a new Track instance using the specified properties.
      * @function create
@@ -562,6 +606,7 @@ $root.Track = (function () {
     Track.create = function create(properties) {
         return new Track(properties);
     };
+
     /**
      * Encodes the specified Track message. Does not implicitly {@link Track.verify|verify} messages.
      * @function encode
@@ -574,11 +619,12 @@ $root.Track = (function () {
     Track.encode = function encode(message, writer) {
         if (!writer)
             writer = $Writer.create();
-        writer.uint32(/* id 1, wireType 0 =*/ 8).uint32(message.x);
-        writer.uint32(/* id 2, wireType 0 =*/ 16).uint32(message.y);
-        writer.uint32(/* id 3, wireType 0 =*/ 24).uint32(message.d);
+        writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.x);
+        writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.y);
+        writer.uint32(/* id 3, wireType 0 =*/24).uint32(message.d);
         return writer;
     };
+
     /**
      * Encodes the specified Track message, length delimited. Does not implicitly {@link Track.verify|verify} messages.
      * @function encodeDelimited
@@ -591,6 +637,7 @@ $root.Track = (function () {
     Track.encodeDelimited = function encodeDelimited(message, writer) {
         return this.encode(message, writer).ldelim();
     };
+
     /**
      * Decodes a Track message from the specified reader or buffer.
      * @function decode
@@ -609,18 +656,18 @@ $root.Track = (function () {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1:
-                    message.x = reader.uint32();
-                    break;
-                case 2:
-                    message.y = reader.uint32();
-                    break;
-                case 3:
-                    message.d = reader.uint32();
-                    break;
-                default:
-                    reader.skipType(tag & 7);
-                    break;
+            case 1:
+                message.x = reader.uint32();
+                break;
+            case 2:
+                message.y = reader.uint32();
+                break;
+            case 3:
+                message.d = reader.uint32();
+                break;
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
         if (!message.hasOwnProperty("x"))
@@ -631,6 +678,7 @@ $root.Track = (function () {
             throw $util.ProtocolError("missing required 'd'", { instance: message });
         return message;
     };
+
     /**
      * Decodes a Track message from the specified reader or buffer, length delimited.
      * @function decodeDelimited
@@ -646,6 +694,7 @@ $root.Track = (function () {
             reader = new $Reader(reader);
         return this.decode(reader, reader.uint32());
     };
+
     /**
      * Verifies a Track message.
      * @function verify
@@ -665,6 +714,7 @@ $root.Track = (function () {
             return "d: integer expected";
         return null;
     };
+
     /**
      * Creates a Track message from a plain object. Also converts values to their respective internal types.
      * @function fromObject
@@ -685,6 +735,7 @@ $root.Track = (function () {
             message.d = object.d >>> 0;
         return message;
     };
+
     /**
      * Creates a plain object from a Track message. Also converts values to other types if specified.
      * @function toObject
@@ -711,6 +762,7 @@ $root.Track = (function () {
             object.d = message.d;
         return object;
     };
+
     /**
      * Converts this Track to JSON.
      * @function toJSON
@@ -721,9 +773,12 @@ $root.Track = (function () {
     Track.prototype.toJSON = function toJSON() {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
     };
+
     return Track;
 })();
-$root.LeaderBoardItem = (function () {
+
+$root.LeaderBoardItem = (function() {
+
     /**
      * Properties of a LeaderBoardItem.
      * @exports ILeaderBoardItem
@@ -731,6 +786,7 @@ $root.LeaderBoardItem = (function () {
      * @property {number} id LeaderBoardItem id
      * @property {number} ratio LeaderBoardItem ratio
      */
+
     /**
      * Constructs a new LeaderBoardItem.
      * @exports LeaderBoardItem
@@ -745,6 +801,7 @@ $root.LeaderBoardItem = (function () {
                 if (properties[keys[i]] != null)
                     this[keys[i]] = properties[keys[i]];
     }
+
     /**
      * LeaderBoardItem id.
      * @member {number} id
@@ -752,6 +809,7 @@ $root.LeaderBoardItem = (function () {
      * @instance
      */
     LeaderBoardItem.prototype.id = 0;
+
     /**
      * LeaderBoardItem ratio.
      * @member {number} ratio
@@ -759,6 +817,7 @@ $root.LeaderBoardItem = (function () {
      * @instance
      */
     LeaderBoardItem.prototype.ratio = 0;
+
     /**
      * Creates a new LeaderBoardItem instance using the specified properties.
      * @function create
@@ -770,6 +829,7 @@ $root.LeaderBoardItem = (function () {
     LeaderBoardItem.create = function create(properties) {
         return new LeaderBoardItem(properties);
     };
+
     /**
      * Encodes the specified LeaderBoardItem message. Does not implicitly {@link LeaderBoardItem.verify|verify} messages.
      * @function encode
@@ -782,10 +842,11 @@ $root.LeaderBoardItem = (function () {
     LeaderBoardItem.encode = function encode(message, writer) {
         if (!writer)
             writer = $Writer.create();
-        writer.uint32(/* id 1, wireType 0 =*/ 8).uint32(message.id);
-        writer.uint32(/* id 2, wireType 5 =*/ 21).float(message.ratio);
+        writer.uint32(/* id 1, wireType 0 =*/8).uint32(message.id);
+        writer.uint32(/* id 2, wireType 0 =*/16).uint32(message.ratio);
         return writer;
     };
+
     /**
      * Encodes the specified LeaderBoardItem message, length delimited. Does not implicitly {@link LeaderBoardItem.verify|verify} messages.
      * @function encodeDelimited
@@ -798,6 +859,7 @@ $root.LeaderBoardItem = (function () {
     LeaderBoardItem.encodeDelimited = function encodeDelimited(message, writer) {
         return this.encode(message, writer).ldelim();
     };
+
     /**
      * Decodes a LeaderBoardItem message from the specified reader or buffer.
      * @function decode
@@ -816,15 +878,15 @@ $root.LeaderBoardItem = (function () {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1:
-                    message.id = reader.uint32();
-                    break;
-                case 2:
-                    message.ratio = reader.float();
-                    break;
-                default:
-                    reader.skipType(tag & 7);
-                    break;
+            case 1:
+                message.id = reader.uint32();
+                break;
+            case 2:
+                message.ratio = reader.uint32();
+                break;
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
         if (!message.hasOwnProperty("id"))
@@ -833,6 +895,7 @@ $root.LeaderBoardItem = (function () {
             throw $util.ProtocolError("missing required 'ratio'", { instance: message });
         return message;
     };
+
     /**
      * Decodes a LeaderBoardItem message from the specified reader or buffer, length delimited.
      * @function decodeDelimited
@@ -848,6 +911,7 @@ $root.LeaderBoardItem = (function () {
             reader = new $Reader(reader);
         return this.decode(reader, reader.uint32());
     };
+
     /**
      * Verifies a LeaderBoardItem message.
      * @function verify
@@ -861,10 +925,11 @@ $root.LeaderBoardItem = (function () {
             return "object expected";
         if (!$util.isInteger(message.id))
             return "id: integer expected";
-        if (typeof message.ratio !== "number")
-            return "ratio: number expected";
+        if (!$util.isInteger(message.ratio))
+            return "ratio: integer expected";
         return null;
     };
+
     /**
      * Creates a LeaderBoardItem message from a plain object. Also converts values to their respective internal types.
      * @function fromObject
@@ -880,9 +945,10 @@ $root.LeaderBoardItem = (function () {
         if (object.id != null)
             message.id = object.id >>> 0;
         if (object.ratio != null)
-            message.ratio = Number(object.ratio);
+            message.ratio = object.ratio >>> 0;
         return message;
     };
+
     /**
      * Creates a plain object from a LeaderBoardItem message. Also converts values to other types if specified.
      * @function toObject
@@ -903,9 +969,10 @@ $root.LeaderBoardItem = (function () {
         if (message.id != null && message.hasOwnProperty("id"))
             object.id = message.id;
         if (message.ratio != null && message.hasOwnProperty("ratio"))
-            object.ratio = options.json && !isFinite(message.ratio) ? String(message.ratio) : message.ratio;
+            object.ratio = message.ratio;
         return object;
     };
+
     /**
      * Converts this LeaderBoardItem to JSON.
      * @function toJSON
@@ -916,9 +983,12 @@ $root.LeaderBoardItem = (function () {
     LeaderBoardItem.prototype.toJSON = function toJSON() {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
     };
+
     return LeaderBoardItem;
 })();
-$root.PayLoad = (function () {
+
+$root.PayLoad = (function() {
+
     /**
      * Properties of a PayLoad.
      * @exports IPayLoad
@@ -929,6 +999,7 @@ $root.PayLoad = (function () {
      * @property {Array.<ILeaderBoardItem>|null} [leaderBoard] PayLoad leaderBoard
      * @property {number} soundFx PayLoad soundFx
      */
+
     /**
      * Constructs a new PayLoad.
      * @exports PayLoad
@@ -945,6 +1016,7 @@ $root.PayLoad = (function () {
                 if (properties[keys[i]] != null)
                     this[keys[i]] = properties[keys[i]];
     }
+
     /**
      * PayLoad mapString.
      * @member {Uint8Array} mapString
@@ -952,6 +1024,7 @@ $root.PayLoad = (function () {
      * @instance
      */
     PayLoad.prototype.mapString = $util.newBuffer([]);
+
     /**
      * PayLoad players.
      * @member {Array.<IPlayerInfoProto>} players
@@ -959,6 +1032,7 @@ $root.PayLoad = (function () {
      * @instance
      */
     PayLoad.prototype.players = $util.emptyArray;
+
     /**
      * PayLoad leftTop.
      * @member {IMyPointProto} leftTop
@@ -966,6 +1040,7 @@ $root.PayLoad = (function () {
      * @instance
      */
     PayLoad.prototype.leftTop = null;
+
     /**
      * PayLoad leaderBoard.
      * @member {Array.<ILeaderBoardItem>} leaderBoard
@@ -973,6 +1048,7 @@ $root.PayLoad = (function () {
      * @instance
      */
     PayLoad.prototype.leaderBoard = $util.emptyArray;
+
     /**
      * PayLoad soundFx.
      * @member {number} soundFx
@@ -980,6 +1056,7 @@ $root.PayLoad = (function () {
      * @instance
      */
     PayLoad.prototype.soundFx = 0;
+
     /**
      * Creates a new PayLoad instance using the specified properties.
      * @function create
@@ -991,6 +1068,7 @@ $root.PayLoad = (function () {
     PayLoad.create = function create(properties) {
         return new PayLoad(properties);
     };
+
     /**
      * Encodes the specified PayLoad message. Does not implicitly {@link PayLoad.verify|verify} messages.
      * @function encode
@@ -1003,17 +1081,18 @@ $root.PayLoad = (function () {
     PayLoad.encode = function encode(message, writer) {
         if (!writer)
             writer = $Writer.create();
-        writer.uint32(/* id 1, wireType 2 =*/ 10).bytes(message.mapString);
+        writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.mapString);
         if (message.players != null && message.players.length)
             for (var i = 0; i < message.players.length; ++i)
-                $root.PlayerInfoProto.encode(message.players[i], writer.uint32(/* id 2, wireType 2 =*/ 18).fork()).ldelim();
-        $root.MyPointProto.encode(message.leftTop, writer.uint32(/* id 3, wireType 2 =*/ 26).fork()).ldelim();
+                $root.PlayerInfoProto.encode(message.players[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+        $root.MyPointProto.encode(message.leftTop, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
         if (message.leaderBoard != null && message.leaderBoard.length)
             for (var i = 0; i < message.leaderBoard.length; ++i)
-                $root.LeaderBoardItem.encode(message.leaderBoard[i], writer.uint32(/* id 4, wireType 2 =*/ 34).fork()).ldelim();
-        writer.uint32(/* id 5, wireType 0 =*/ 40).uint32(message.soundFx);
+                $root.LeaderBoardItem.encode(message.leaderBoard[i], writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+        writer.uint32(/* id 5, wireType 0 =*/40).uint32(message.soundFx);
         return writer;
     };
+
     /**
      * Encodes the specified PayLoad message, length delimited. Does not implicitly {@link PayLoad.verify|verify} messages.
      * @function encodeDelimited
@@ -1026,6 +1105,7 @@ $root.PayLoad = (function () {
     PayLoad.encodeDelimited = function encodeDelimited(message, writer) {
         return this.encode(message, writer).ldelim();
     };
+
     /**
      * Decodes a PayLoad message from the specified reader or buffer.
      * @function decode
@@ -1044,28 +1124,28 @@ $root.PayLoad = (function () {
         while (reader.pos < end) {
             var tag = reader.uint32();
             switch (tag >>> 3) {
-                case 1:
-                    message.mapString = reader.bytes();
-                    break;
-                case 2:
-                    if (!(message.players && message.players.length))
-                        message.players = [];
-                    message.players.push($root.PlayerInfoProto.decode(reader, reader.uint32()));
-                    break;
-                case 3:
-                    message.leftTop = $root.MyPointProto.decode(reader, reader.uint32());
-                    break;
-                case 4:
-                    if (!(message.leaderBoard && message.leaderBoard.length))
-                        message.leaderBoard = [];
-                    message.leaderBoard.push($root.LeaderBoardItem.decode(reader, reader.uint32()));
-                    break;
-                case 5:
-                    message.soundFx = reader.uint32();
-                    break;
-                default:
-                    reader.skipType(tag & 7);
-                    break;
+            case 1:
+                message.mapString = reader.bytes();
+                break;
+            case 2:
+                if (!(message.players && message.players.length))
+                    message.players = [];
+                message.players.push($root.PlayerInfoProto.decode(reader, reader.uint32()));
+                break;
+            case 3:
+                message.leftTop = $root.MyPointProto.decode(reader, reader.uint32());
+                break;
+            case 4:
+                if (!(message.leaderBoard && message.leaderBoard.length))
+                    message.leaderBoard = [];
+                message.leaderBoard.push($root.LeaderBoardItem.decode(reader, reader.uint32()));
+                break;
+            case 5:
+                message.soundFx = reader.uint32();
+                break;
+            default:
+                reader.skipType(tag & 7);
+                break;
             }
         }
         if (!message.hasOwnProperty("mapString"))
@@ -1076,6 +1156,7 @@ $root.PayLoad = (function () {
             throw $util.ProtocolError("missing required 'soundFx'", { instance: message });
         return message;
     };
+
     /**
      * Decodes a PayLoad message from the specified reader or buffer, length delimited.
      * @function decodeDelimited
@@ -1091,6 +1172,7 @@ $root.PayLoad = (function () {
             reader = new $Reader(reader);
         return this.decode(reader, reader.uint32());
     };
+
     /**
      * Verifies a PayLoad message.
      * @function verify
@@ -1131,6 +1213,7 @@ $root.PayLoad = (function () {
             return "soundFx: integer expected";
         return null;
     };
+
     /**
      * Creates a PayLoad message from a plain object. Also converts values to their respective internal types.
      * @function fromObject
@@ -1177,6 +1260,7 @@ $root.PayLoad = (function () {
             message.soundFx = object.soundFx >>> 0;
         return message;
     };
+
     /**
      * Creates a plain object from a PayLoad message. Also converts values to other types if specified.
      * @function toObject
@@ -1223,6 +1307,7 @@ $root.PayLoad = (function () {
             object.soundFx = message.soundFx;
         return object;
     };
+
     /**
      * Converts this PayLoad to JSON.
      * @function toJSON
@@ -1233,6 +1318,8 @@ $root.PayLoad = (function () {
     PayLoad.prototype.toJSON = function toJSON() {
         return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
     };
+
     return PayLoad;
 })();
+
 module.exports = $root;

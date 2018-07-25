@@ -1,4 +1,3 @@
-// import * as $protobuf from "../Lib/protobufjs";
 let $protobuf: any = protobuf;
 /** Properties of a MyPointProto. */
 export interface IMyPointProto {
