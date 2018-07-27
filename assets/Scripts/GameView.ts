@@ -304,7 +304,7 @@ export default class GameView extends cc.Component {
                 particle.endColor.setA(0);
                 explosion.position = this.getRowColPosition(info.headPos.x, info.headPos.y);
 
-                this.particleRoot.addChild(cc.instantiate(explosion));
+                this.particleRoot.addChild(explosion);
             }
 
             for (let t of info.tracks) {
@@ -455,14 +455,16 @@ export default class GameView extends cc.Component {
                 imageUrl: data._textureFilename,
             });
         });
-        this.shareBoard.getChildByName('ShareButton').getChildByName('Label').getComponent<cc.Label>(cc.Label).string = '复活';
         this.shareBoard.getChildByName('ShareButton').off('click', this.onShareButtonClick, this);
-        this.shareBoard.getChildByName('ShareButton').on('click', () => {
-            this.shareBoard.active = false;
-            this.hasReborn = true;
-            this.clientAdapter.rebornPlayer(this.myPlayerID);
-        }, this);
         this.shareBoard.getChildByName('ExitButton').active = false;
+        setTimeout(() => {
+            this.shareBoard.getChildByName('ShareButton').getChildByName('Label').getComponent<cc.Label>(cc.Label).string = '复活';
+            this.shareBoard.getChildByName('ShareButton').on('click', () => {
+                this.shareBoard.active = false;
+                this.hasReborn = true;
+                this.clientAdapter.rebornPlayer(this.myPlayerID);
+            }, this);
+        }, 1000);
     }
 
     async onWorldChange(deltaTime: number): Promise<void> {
