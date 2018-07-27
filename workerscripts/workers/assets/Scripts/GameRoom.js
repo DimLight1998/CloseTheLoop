@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const GameAI_1 = require("./GameAI");
 const PayLoadProtobuf_1 = require("./PayLoadProtobuf");
+const Uint16PairQueue_1 = require("./Uint16PairQueue");
 class GameRoom {
     constructor(nRows, nCols, playerNum) {
         this.serverAdapter = null;
@@ -15,6 +16,8 @@ class GameRoom {
         this.rebornHumanList = [];
         this.mapStatus = null;
         this.inWx = false;
+        this.pairQueue = null;
+        this.storageQueue = null;
         this.nRows = nRows;
         this.nCols = nCols;
         this.playerNum = playerNum;
@@ -36,6 +39,8 @@ class GameRoom {
             this.payload.leaderBoard.push(new PayLoadProtobuf_1.LeaderBoardItem());
         }
         this.payload.leftTop = new PayLoadProtobuf_1.MyPointProto();
+        this.pairQueue = new Uint16PairQueue_1.Uint16PairQueue(nRows * nCols);
+        this.storageQueue = new Uint16PairQueue_1.Uint16PairQueue(nRows * nCols);
     }
     static create2DArray(nRows, nCols) {
         return Array(nRows).fill(0).map(() => Array(nCols).fill(0));
@@ -249,13 +254,13 @@ class GameRoom {
     floodFill(r, c, playerId) {
         // start flood fill
         let adjToWall = false;
-        let queue = [];
-        let storage = [];
-        queue.push([r, c]);
-        storage.push([r, c]);
+        this.pairQueue.clear();
+        this.storageQueue.clear();
+        this.pairQueue.push(r, c);
+        this.storageQueue.push(r, c);
         this.mapStatus[r][c] = this.maxT;
-        while (queue.length > 0) {
-            let [x, y] = queue.pop(); // convert queue to stack, performance enhance
+        while (!this.pairQueue.empty()) {
+            let [x, y] = this.pairQueue.shift();
             for (let dir of GameRoom.directions) {
                 let [nx, ny] = [x + dir.x, y + dir.y];
                 if (this.atBorder(nx, ny)) {
@@ -266,8 +271,8 @@ class GameRoom {
                         && this.trackMap[nx][ny] !== playerId
                         && this.mapStatus[nx][ny] !== this.maxT) {
                         this.mapStatus[nx][ny] = this.maxT;
-                        queue.push([nx, ny]);
-                        storage.push([nx, ny]);
+                        this.pairQueue.push(nx, ny);
+                        this.storageQueue.push(nx, ny);
                     }
                 }
             }
@@ -275,8 +280,8 @@ class GameRoom {
         if (!adjToWall) {
             // console.log(storage);
             // this block is not adjacent to a wall, so it should be colored
-            for (const [x, y] of storage) {
-                this.colorMap[x][y] = playerId;
+            for (let i = this.storageQueue.head; i < this.storageQueue.tail; i++) {
+                this.colorMap[this.storageQueue.queueA[i]][this.storageQueue.queueB[i]] = playerId;
             }
             return true;
         }

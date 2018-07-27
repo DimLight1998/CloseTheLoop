@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const GameRoom_1 = require("./GameRoom");
 const PlayerInfo_1 = require("./PlayerInfo");
+const Uint16TripleQueue_1 = require("./Uint16TripleQueue");
 var State;
 (function (State) {
     State[State["Idle"] = 0] = "Idle";
@@ -237,8 +238,8 @@ class GameAI {
         let [sR, sC, sD] = [this.playerInfo.headPos.x, this.playerInfo.headPos.y,
             this.playerInfo.headDirection];
         GameAI.max_t++;
-        const queue = [];
-        queue.push([sR, sC, sD]);
+        GameAI.tripleQueue.clear();
+        GameAI.tripleQueue.push(sR, sC, sD);
         GameAI.prevDir[sR][sC][sD] = -1;
         GameAI.vis[sR][sC][sD] = GameAI.max_t;
         GameAI.dist[sR][sC][sD] = 0;
@@ -248,8 +249,8 @@ class GameAI {
         this.enemyDist = 1e9;
         this.enemyPlan = null;
         this.trackCoords = [];
-        while (queue.length > 0) {
-            let [r, c, d] = queue.shift();
+        while (!GameAI.tripleQueue.empty()) {
+            let [r, c, d] = GameAI.tripleQueue.shift();
             if (this.homeLandPos === null && this.game.colorMap[r][c] === this.playerID) {
                 this.homeLandPos = [r, c, d];
                 this.homeLandDist = GameAI.dist[r][c][d];
@@ -279,7 +280,7 @@ class GameAI {
                                 GameAI.vis[nr][nc][curD] = GameAI.max_t;
                                 GameAI.dist[nr][nc][curD] = GameAI.dist[r][c][d] + 1;
                                 GameAI.prevDir[nr][nc][curD] = d;
-                                queue.push([nr, nc, curD]);
+                                GameAI.tripleQueue.push(nr, nc, curD);
                             }
                         }
                     }
@@ -461,4 +462,5 @@ GameAI.vis = null;
 GameAI.prevDir = null;
 GameAI.dist = null;
 GameAI.max_t = 0;
+GameAI.tripleQueue = new Uint16TripleQueue_1.Uint16TripleQueue(20 * 20 * 4);
 exports.GameAI = GameAI;
