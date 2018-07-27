@@ -273,6 +273,13 @@ export default class GameView extends cc.Component {
 
 
     updateHeads(): void {
+        if (this.foregroundNode !== null && GameRoom.isAlive(this.players[this.myPlayerID - 1])) {
+            this.haloNode.color = this.lightColorList[this.myPlayerID];
+            this.foregroundNode.destroy();
+            this.foregroundNode = null;
+            this.asking = false;
+        }
+
         for (let i: number = 0; i < this.players.length; i++) {
             const info: IPlayerInfoProto = this.players[i];
 
@@ -286,15 +293,6 @@ export default class GameView extends cc.Component {
                 this.headRoot.children[i].position = pos;
 
                 this.headRoot.children[i].color = this.darkColorList[info.playerID];
-
-                if (info.playerID === this.myPlayerID) {
-                    this.haloNode.color = this.lightColorList[this.myPlayerID];
-                    if (this.foregroundNode !== null) {
-                        this.foregroundNode.destroy();
-                        this.foregroundNode = null;
-                    }
-                    this.asking = false;
-                }
             } else if (info.state === 1) {
                 this.headRoot.children[i].position = cc.v2(1e9, 1e9);
 
@@ -487,18 +485,20 @@ export default class GameView extends cc.Component {
     }
 
     playSound(): void {
-        switch (this.roundSoundFx) {
-            case 0:
-                break;
-            case 1:
-                cc.audioEngine.play(this.soundCloseLoop, false, 1);
-                break;
-            case 2:
-                cc.audioEngine.play(this.soundKill, false, 1);
-                break;
-            case 3:
-                cc.audioEngine.play(this.soundKilled, false, 1);
-                break;
+        if (this.foregroundNode === null) {
+            switch (this.roundSoundFx) {
+                case 0:
+                    break;
+                case 1:
+                    cc.audioEngine.play(this.soundCloseLoop, false, 1);
+                    break;
+                case 2:
+                    cc.audioEngine.play(this.soundKill, false, 1);
+                    break;
+                case 3:
+                    cc.audioEngine.play(this.soundKilled, false, 1);
+                    break;
+            }
         }
     }
 
