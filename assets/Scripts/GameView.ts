@@ -278,7 +278,7 @@ export default class GameView extends cc.Component {
             this.foregroundNode.destroy();
             this.foregroundNode = null;
         }
-        
+
         if (this.asking && GameRoom.isAlive(this.players[this.myPlayerID - 1])) {
             this.asking = false;
         }
