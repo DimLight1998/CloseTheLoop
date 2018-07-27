@@ -322,6 +322,9 @@ export default class GameView extends cc.Component {
     }
 
     public refreshData(info: PayLoad, deltaTime: number): void {
+        this.clientAdapter.wxFireRoundStartEvent();// call server to complete the next turn
+        let currentTime: number = Date.now();
+
         this.setLeftTop(info.leftTop, info.mapString);
         this.players = info.players;
         if (this.firstFlag) {
@@ -333,6 +336,16 @@ export default class GameView extends cc.Component {
         }
         this.roundSoundFx = info.soundFx;
         this.onWorldChange(deltaTime);
+
+        if (this.firstFlag) {
+            this.firstFlag = false;
+        }
+
+        let duration: number = currentTime + this.nextDuration - Date.now();
+        if (duration < 0) {
+            duration = 0;
+        }
+        this.timer = setTimeout(this.fetchNewWorld.bind(this), duration);
     }
 
     adjustDuration(deltaTime: number): void {
@@ -469,22 +482,12 @@ export default class GameView extends cc.Component {
     }
 
     async onWorldChange(deltaTime: number): Promise<void> {
-        let currentTime: number = Date.now();
-        this.clientAdapter.wxFireRoundStartEvent();// call server to complete the next turn
         this.adjustDuration(deltaTime);
         await this.updateTiles();
         await this.updateHeads();
         this.updateLeaderBoard();
         this.playSound();
         this.updateRebornAsk();
-        if (this.firstFlag) {
-            this.firstFlag = false;
-        }
-        let duration: number = currentTime + this.nextDuration - Date.now();
-        if (duration < 0) {
-            duration = 0;
-        }
-        this.timer = setTimeout(this.fetchNewWorld.bind(this), duration);
     }
 
     playSound(): void {
