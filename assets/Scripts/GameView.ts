@@ -431,18 +431,20 @@ export default class GameView extends cc.Component {
                 param2: this.players[this.myPlayerID - 1].nKill
             });
 
-            // show corresponding board
-            if (this.hasReborn) {
-                this.exitBoard.active = true;
-                this.exitBoard.color = this.lightColorList[this.myPlayerID];
-                this.exitBoard.getChildByName('IKnowButton').color = this.darkColorList[this.myPlayerID];
-                this.exitBoard.getChildByName('ExitButton').color = this.darkColorList[this.myPlayerID];
-            } else {
-                this.shareBoard.active = true;
-                this.shareBoard.color = this.lightColorList[this.myPlayerID];
-                this.shareBoard.getChildByName('ShareButton').color = this.darkColorList[this.myPlayerID];
-                this.shareBoard.getChildByName('ExitButton').color = this.darkColorList[this.myPlayerID];
-            }
+            setTimeout(() => {
+                // show corresponding board
+                if (this.hasReborn) {
+                    this.exitBoard.active = true;
+                    this.exitBoard.color = this.lightColorList[this.myPlayerID];
+                    this.exitBoard.getChildByName('IKnowButton').color = this.darkColorList[this.myPlayerID];
+                    this.exitBoard.getChildByName('ExitButton').color = this.darkColorList[this.myPlayerID];
+                } else {
+                    this.shareBoard.active = true;
+                    this.shareBoard.color = this.lightColorList[this.myPlayerID];
+                    this.shareBoard.getChildByName('ShareButton').color = this.darkColorList[this.myPlayerID];
+                    this.shareBoard.getChildByName('ExitButton').color = this.darkColorList[this.myPlayerID];
+                }
+            }, 1000);
         }
     }
 
