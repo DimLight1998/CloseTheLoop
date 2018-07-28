@@ -105,7 +105,7 @@ class GameRoom {
      * sometimes finding such area is hard (maybe impossible), return null in this case.
      */
     randomSpawnNewPlayer(playerID) {
-        const maxTryNum = 100;
+        const maxTryNum = 20;
         for (let i = 0; i < maxTryNum; i++) {
             const r = GameRoom.randInt(0, this.nRows - 1);
             const c = GameRoom.randInt(0, this.nCols - 1);
@@ -360,6 +360,9 @@ class GameRoom {
         this.leaderBoard.sort(([, score1], [, score2]) => score2 - score1);
     }
     updateAIs() {
+        if (GameAI_1.GameAI.maxDistance < GameAI_1.GameAI.finalMaxDistance) {
+            GameAI_1.GameAI.maxDistance += GameAI_1.GameAI.distanceStep;
+        }
         for (const player of this.serverPlayerInfos) {
             if (GameRoom.isAlive(player)) {
                 player.aiInstance.updateAI();
@@ -620,14 +623,18 @@ class GameRoom {
                 }
             }
         }
-        for (let i = 0; i < this.nRows; i++) {
-            for (let j = 0; j < this.nCols; j++) {
-                for (let p of this.playersToClear) {
-                    if (p[0] === this.trackMap[i][j]) {
-                        this.trackMap[i][j] = 0;
-                    }
-                    if (p[1] && p[0] === this.colorMap[i][j]) {
-                        this.colorMap[i][j] = 0;
+        if (this.playersToClear.length > 0) {
+            for (let i = 0; i < this.nRows; i++) {
+                for (let j = 0; j < this.nCols; j++) {
+                    if (this.trackMap[i][j] !== 0 || this.colorMap[i][j] !== 0) {
+                        for (let p of this.playersToClear) {
+                            if (p[0] === this.trackMap[i][j]) {
+                                this.trackMap[i][j] = 0;
+                            }
+                            if (p[1] && p[0] === this.colorMap[i][j]) {
+                                this.colorMap[i][j] = 0;
+                            }
+                        }
                     }
                 }
             }

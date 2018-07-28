@@ -18,7 +18,6 @@ class GameAI {
         this.planRate = 0.35;
         this.emptyLandProceedRate = 0.9;
         this.enemyLandProceedRate = 0.7;
-        this.maxDistance = 10;
         this.dangerThreshold = 0.5;
         this.fleeRate = 0.3;
         this.attackRate = 0.5;
@@ -54,7 +53,7 @@ class GameAI {
         this.planStack = [];
     }
     updateAI() {
-        this.bfs(this.maxDistance);
+        this.bfs(GameAI.maxDistance);
         if (this.playerInfo.isAI) {
             this.updateState();
         }
@@ -463,4 +462,7 @@ GameAI.prevDir = null;
 GameAI.dist = null;
 GameAI.max_t = 0;
 GameAI.tripleQueue = new Uint16TripleQueue_1.Uint16TripleQueue(20 * 20 * 4);
+GameAI.maxDistance = 0;
+GameAI.finalMaxDistance = 7;
+GameAI.distanceStep = 0.2;
 exports.GameAI = GameAI;
