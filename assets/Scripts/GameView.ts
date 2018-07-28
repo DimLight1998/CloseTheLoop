@@ -321,21 +321,27 @@ export default class GameView extends cc.Component {
         this.clientAdapter.requestNewWorld(Date.now());
     }
 
-    public refreshData(info: PayLoad, deltaTime: number): void {
+    public async refreshData(info: PayLoad, deltaTime: number): Promise<void> {
         this.clientAdapter.wxFireRoundStartEvent();// call server to complete the next turn
         let currentTime: number = Date.now();
 
-        this.setLeftTop(info.leftTop, info.mapString);
+        await this.setLeftTop(info.leftTop, info.mapString);
         this.players = info.players;
         if (this.firstFlag) {
-            this.updateHeadsFirstTime();
+            await this.updateHeadsFirstTime();
         }
         this.leaderBoard = info.leaderBoard;
         for (const item of this.leaderBoard) {
             item.ratio /= 10000;
         }
         this.roundSoundFx = info.soundFx;
-        this.onWorldChange(deltaTime);
+
+        this.adjustDuration(deltaTime);
+        await this.updateTiles();
+        await this.updateHeads();
+        this.updateLeaderBoard();
+        this.playSound();
+        this.updateRebornAsk();
 
         if (this.firstFlag) {
             this.firstFlag = false;
@@ -479,15 +485,6 @@ export default class GameView extends cc.Component {
                 this.clientAdapter.rebornPlayer(this.myPlayerID);
             }, this);
         }, 1000);
-    }
-
-    async onWorldChange(deltaTime: number): Promise<void> {
-        this.adjustDuration(deltaTime);
-        await this.updateTiles();
-        await this.updateHeads();
-        this.updateLeaderBoard();
-        this.playSound();
-        this.updateRebornAsk();
     }
 
     playSound(): void {
