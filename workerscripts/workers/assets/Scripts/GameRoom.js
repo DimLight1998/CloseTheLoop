@@ -555,8 +555,14 @@ class GameRoom {
     initPlayerInfoProto() {
         for (let i = 0; i < this.playerNum; i++) {
             this.payload.players[i].playerID = this.serverPlayerInfos[i].playerID;
-            this.payload.players[i].headPos.x = this.serverPlayerInfos[i].headPos.x;
-            this.payload.players[i].headPos.y = this.serverPlayerInfos[i].headPos.y;
+            if (this.serverPlayerInfos[i].headPos !== null) {
+                this.payload.players[i].headPos.x = this.serverPlayerInfos[i].headPos.x;
+                this.payload.players[i].headPos.y = this.serverPlayerInfos[i].headPos.y;
+            }
+            else {
+                this.payload.players[i].headPos.x = -1; // dummy value
+                this.payload.players[i].headPos.y = -1; // dummy value
+            }
             this.payload.players[i].headDirection = this.serverPlayerInfos[i].headDirection;
             this.payload.players[i].nKill = this.serverPlayerInfos[i].nKill;
             this.payload.players[i].state = this.serverPlayerInfos[i].state;
