@@ -1,5 +1,5 @@
 :: this path should be changed by users
-set COCOS_PATH=D:\CocosCreator
+set COCOS_PATH=F:\Dev\CocosCreator
 
 set MAIN_PATH=.
 set SD_PATH=..\CloseTheLoopWXSD
